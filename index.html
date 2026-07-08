@@ -806,10 +806,21 @@ function LiftLog() {
       };
     });
   };
+  const markSet = (exId, i, total, isDone) => {
+    setDone(prev => {
+      const arr = prev[exId] ? [...prev[exId]] : Array(total).fill(false);
+      arr[i] = isDone;
+      return {
+        ...prev,
+        [exId]: arr
+      };
+    });
+  };
   const bumpSet = (ex, i, delta) => {
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
       arr[i] = Math.max(0, Math.round((arr[i] + delta) * 10) / 10);
+      markSet(ex.id, i, ex.sets, arr[i] > 0);
       return {
         ...prev,
         [ex.id]: arr
@@ -821,6 +832,7 @@ function LiftLog() {
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
       arr[i] = isNaN(n) ? 0 : Math.max(0, n);
+      markSet(ex.id, i, ex.sets, arr[i] > 0);
       return {
         ...prev,
         [ex.id]: arr
