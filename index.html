@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#131417" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Lift Log</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23131417'/><rect x='15' y='42' width='14' height='16' rx='3' fill='%23D64545'/><rect x='71' y='42' width='14' height='16' rx='3' fill='%23D64545'/><rect x='29' y='47' width='42' height='6' rx='3' fill='%23ECEAE4'/></svg>" />
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #131417; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+  .setdot { transition: transform 0.12s ease, background 0.15s ease; }
+  .setdot:active { transform: scale(0.85); }
+  .daytab { transition: transform 0.15s ease, opacity 0.2s ease; }
+  .daytab:active { transform: scale(0.92); }
+  .stepbtn:active { transform: scale(0.9); }
+  @media (prefers-reduced-motion: reduce) { .setdot, .daytab, .stepbtn { transition: none; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+// ————— Storage: browser localStorage with in-memory fallback —————
+const memStore = {};
+const store = {
+  available: (() => {
+    try {
+      localStorage.setItem("__lift_log_test", "1");
+      localStorage.removeItem("__lift_log_test");
+      return true;
+    } catch (e) {
+      return false;
+    }
+  })(),
+  get(key) {
+    if (this.available) {
+      try { return localStorage.getItem(key); } catch (e) { return memStore[key] ?? null; }
+    }
+    return memStore[key] ?? null;
+  },
+  set(key, value) {
+    memStore[key] = value;
+    if (this.available) {
+      try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
+    }
+    return false;
+  },
+};
+
+// ————— Program data —————
+// Day colors follow competition plate colors: red 25kg, blue 20, yellow 15, green 10, white 5
+const PROGRAM = [
+  {
+    id: "push",
+    label: "Push",
+    sub: "Chest · Shoulders · Triceps · Abs",
+    color: "#D64545",
+    exercises: [
+      { id: "declinecrunch", name: "Decline cable crunch", target: "3 × 12", sets: 3, unit: "lb", step: 5 },
+      { id: "wcrunch", name: "Weighted crunches", target: "3 × 15", sets: 3, unit: "lb", step: 2.5 },
+      { id: "bench", name: "Barbell bench press", target: "4 × 6", sets: 4, unit: "lb", step: 5 },
+      { id: "machinepress", name: "Machine chest press", target: "3 × 8", sets: 3, unit: "lb", step: 5 },
+      { id: "arnold", name: "Arnold press", target: "3 × 8", sets: 3, unit: "lb", step: 5 },
+      { id: "lowfly", name: "Low-to-high cable fly", target: "3 × 8", sets: 3, unit: "lb", step: 2.5 },
+      { id: "machlat", name: "Machine lateral raise", target: "4 × 10", sets: 4, unit: "lb", step: 2.5 },
+      { id: "cgbench", name: "Close-grip bench press", target: "3 × 8", sets: 3, unit: "lb", step: 5 },
+      { id: "ohtricep", name: "Overhead cable tricep ext.", target: "3 × 12, 10, 8", sets: 3, unit: "lb", step: 2.5 },
+    ],
+  },
+  {
+    id: "pull",
+    label: "Pull",
+    sub: "Back · Rear delts · Biceps",
+    color: "#3B6BB5",
+    exercises: [
+      { id: "deadlift", name: "Deadlift", target: "3 × 5", sets: 3, unit: "lb", step: 10 },
+      { id: "csrow", name: "Chest-supported row", target: "3 × 8", sets: 3, unit: "lb", step: 5 },
+      { id: "ngpulldown", name: "Neutral-grip pulldown", target: "4 × 8", sets: 4, unit: "lb", step: 5 },
+      { id: "cablerow1", name: "Cable single-arm row", target: "3 × 8 / arm", sets: 3, unit: "lb", step: 5 },
+      { id: "revpecdeck", name: "Reverse pec deck", target: "3 × 10", sets: 3, unit: "lb", step: 5 },
+      { id: "inclinecurl", name: "Incline dumbbell curl", target: "3 × 8", sets: 3, unit: "lb", step: 2.5 },
+      { id: "ropehammer", name: "Cable rope hammer curl", target: "3 × 8", sets: 3, unit: "lb", step: 2.5 },
+    ],
+  },
+  {
+    id: "legs",
+    label: "Legs",
+    sub: "Quads · Posterior chain · Abs",
+    color: "#E0B33C",
+    exercises: [
+      { id: "kneeraise", name: "Hanging knee raise w/ twist", target: "3 × 10 / side", sets: 3, unit: "lb", step: 2.5 },
+      { id: "wplank", name: "Weighted plank / body saw", target: "3 × 45–60s", sets: 3, unit: "sec", step: 5 },
+      { id: "squat", name: "Back squat", target: "4 × 6", sets: 4, unit: "lb", step: 5 },
+      { id: "sldl", name: "Stiff-leg DB deadlift", target: "3 × 8", sets: 3, unit: "lb", step: 5 },
+      { id: "lunges", name: "Walking lunges", target: "3 × 8 / leg", sets: 3, unit: "lb", step: 5 },
+      { id: "lyingcurl", name: "Lying leg curl", target: "3 × 12, 10, 8", sets: 3, unit: "lb", step: 5 },
+      { id: "sissy", name: "Sissy squat / rev. Nordic", target: "3 × 8–10", sets: 3, unit: "lb", step: 2.5 },
+      { id: "slcalf", name: "Single-leg calf raise", target: "4 × 10 / leg", sets: 4, unit: "lb", step: 5 },
+    ],
+  },
+  {
+    id: "upper",
+    label: "Upper",
+    sub: "Strength + balance",
+    color: "#3D8A4E",
+    exercises: [
+      { id: "inclinebench", name: "Incline barbell bench", target: "3 × 7", sets: 3, unit: "lb", step: 5 },
+      { id: "chinups", name: "Weighted chin-ups", target: "3 × 7", sets: 3, unit: "lb", step: 2.5 },
+      { id: "meadows", name: "Meadows / Kroc row", target: "3 × 8", sets: 3, unit: "lb", step: 5 },
+      { id: "pecdeck", name: "Pec deck / hi-to-low fly", target: "3 × 8", sets: 3, unit: "lb", step: 5 },
+      { id: "leanlat", name: "Lean-away lateral raise", target: "3 × 12", sets: 3, unit: "lb", step: 2.5 },
+      { id: "jmpress", name: "JM press / skullcrushers", target: "3 × 10, 8, 8", sets: 3, unit: "lb", step: 2.5 },
+      { id: "bayesian", name: "Bayesian cable curl", target: "3 × 8", sets: 3, unit: "lb", step: 2.5 },
+    ],
+  },
+  {
+    id: "cardio",
+    label: "Cardio",
+    sub: "Run or swim + core at home",
+    color: "#E8E6DF",
+    exercises: [
+      { id: "cardio", name: "Run or swim", target: "25–40 min", sets: 1, unit: "min", step: 5 },
+      { id: "sideplank", name: "Side plank", target: "3 × 30–45s / side", sets: 3, unit: "sec", step: 5 },
+      { id: "revcrunch", name: "Reverse crunch", target: "3 × 12–15", sets: 3, unit: "reps", step: 1 },
+    ],
+  },
+];
+
+const STORAGE_KEY = "lift_log_v1";
+const ALL_EX = PROGRAM.flatMap((d) => d.exercises);
+const EX_BY_ID = Object.fromEntries(ALL_EX.map((e) => [e.id, e]));
+const DAY_BY_ID = Object.fromEntries(PROGRAM.map((d) => [d.id, d]));
+
+function fmtDate(iso) {
+  const d = new Date(iso + "T12:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+function fmtDateLong(iso) {
+  const d = new Date(iso + "T12:00:00");
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+}
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+function fmtWs(ws) {
+  const nums = (ws || []).map((w) => (w > 0 ? w : "·"));
+  return nums.join("/");
+}
+function maxW(ws) {
+  return Math.max(0, ...(ws || []).filter((w) => typeof w === "number"));
+}
+function normalizeEntry(e, sets) {
+  if (e.ws) return e;
+  const w = typeof e.w === "number" ? e.w : 0;
+  return { d: e.d, ws: Array(sets).fill(w) };
+}
+
+function LiftLog() {
+  const [view, setView] = useState("today");
+  const [activeDay, setActiveDay] = useState(PROGRAM[0].id);
+  const [records, setRecords] = useState({});
+  const [sessions, setSessions] = useState([]);
+  const [loads, setLoads] = useState({});
+  const [done, setDone] = useState({});
+  const [expanded, setExpanded] = useState(null);
+  const [notes, setNotes] = useState({});
+  const [custom, setCustom] = useState({});
+  const [removed, setRemoved] = useState([]);
+  const [renames, setRenames] = useState({});
+  const [editingEx, setEditingEx] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [confirmRemoveEx, setConfirmRemoveEx] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addName, setAddName] = useState("");
+  const [addSets, setAddSets] = useState(3);
+  const [addTarget, setAddTarget] = useState("");
+  const [flash, setFlash] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [backupMode, setBackupMode] = useState(null);
+  const [importText, setImportText] = useState("");
+  const [importMsg, setImportMsg] = useState("");
+  const dataRef = useRef({ records: {}, sessions: [], notes: {}, custom: {}, removed: [], renames: {} });
+  const noteTimer = useRef(null);
+  const storageOk = store.available;
+
+  useEffect(() => {
+    let recs = {};
+    let sess = [];
+    let savedNotes = {};
+    let savedCustom = {};
+    let savedRemoved = [];
+    let savedRenames = {};
+    try {
+      const raw = store.get(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        recs = parsed.records || {};
+        sess = parsed.sessions || [];
+        savedNotes = parsed.notes || {};
+        savedCustom = parsed.custom || {};
+        savedRemoved = parsed.removed || [];
+        savedRenames = parsed.renames || {};
+      }
+    } catch (e) {
+      // corrupt or missing — start fresh
+    }
+    const allCustom = Object.values(savedCustom).flat();
+    const customById = Object.fromEntries(allCustom.map((e) => [e.id, e]));
+    const lookup = (id) => EX_BY_ID[id] || customById[id];
+    const normRecs = {};
+    Object.keys(recs).forEach((exId) => {
+      const ex = lookup(exId);
+      const sets = ex ? ex.sets : 3;
+      normRecs[exId] = recs[exId].map((e) => normalizeEntry(e, sets));
+    });
+    const normSess = sess.map((s) => ({
+      ...s,
+      entries: s.entries.map((e) => {
+        if (e.ws) return e;
+        const ex = lookup(e.exId);
+        const sets = e.sets || (ex ? ex.sets : 3);
+        return { ...e, ws: Array(sets).fill(typeof e.w === "number" ? e.w : 0) };
+      }),
+    }));
+    dataRef.current = { records: normRecs, sessions: normSess, notes: savedNotes, custom: savedCustom, removed: savedRemoved, renames: savedRenames };
+    setRecords(normRecs);
+    setSessions(normSess);
+    setNotes(savedNotes);
+    setCustom(savedCustom);
+    setRemoved(savedRemoved);
+    setRenames(savedRenames);
+    const initLoads = {};
+    [...ALL_EX, ...allCustom].forEach((ex) => {
+      const hist = normRecs[ex.id];
+      if (hist && hist.length) {
+        const last = hist[hist.length - 1].ws;
+        initLoads[ex.id] = Array(ex.sets)
+          .fill(0)
+          .map((_, i) => (typeof last[i] === "number" ? last[i] : last[last.length - 1] || 0));
+      }
+    });
+    setLoads(initLoads);
+    setLoaded(true);
+  }, []);
+
+  const day = PROGRAM.find((d) => d.id === activeDay);
+  const isLight = day.id === "cardio";
+  const dayFg = isLight ? "#17181B" : "#FBFAF7";
+
+  const removedSet = new Set(removed);
+  const dayExercises = [
+    ...day.exercises.filter((ex) => !removedSet.has(ex.id)),
+    ...(custom[day.id] || []),
+  ];
+  const exMap = { ...EX_BY_ID, ...Object.fromEntries(Object.values(custom).flat().map((e) => [e.id, e])) };
+
+  const getLoads = (ex) => {
+    const arr = loads[ex.id] || [];
+    return Array(ex.sets)
+      .fill(0)
+      .map((_, i) => (typeof arr[i] === "number" ? arr[i] : 0));
+  };
+
+  const toggleSet = (exId, i, total) => {
+    setDone((prev) => {
+      const arr = prev[exId] ? [...prev[exId]] : Array(total).fill(false);
+      arr[i] = !arr[i];
+      return { ...prev, [exId]: arr };
+    });
+  };
+
+  const bumpSet = (ex, i, delta) => {
+    setLoads((prev) => {
+      const arr = getLoadsFrom(prev, ex);
+      arr[i] = Math.max(0, Math.round((arr[i] + delta) * 10) / 10);
+      return { ...prev, [ex.id]: arr };
+    });
+  };
+
+  const setSetDirect = (ex, i, val) => {
+    const n = parseFloat(val);
+    setLoads((prev) => {
+      const arr = getLoadsFrom(prev, ex);
+      arr[i] = isNaN(n) ? 0 : Math.max(0, n);
+      return { ...prev, [ex.id]: arr };
+    });
+  };
+
+  const copyDown = (ex, i) => {
+    setLoads((prev) => {
+      const arr = getLoadsFrom(prev, ex);
+      for (let j = i + 1; j < ex.sets; j++) arr[j] = arr[i];
+      return { ...prev, [ex.id]: arr };
+    });
+  };
+
+  function getLoadsFrom(state, ex) {
+    const cur = state[ex.id] || [];
+    return Array(ex.sets)
+      .fill(0)
+      .map((_, k) => (typeof cur[k] === "number" ? cur[k] : 0));
+  }
+
+  const persist = () => {
+    const ok = store.set(STORAGE_KEY, JSON.stringify(dataRef.current));
+    if (!ok) throw new Error("storage write failed");
+    const check = store.get(STORAGE_KEY);
+    if (!check) throw new Error("save verification failed");
+  };
+
+  const updateNote = (exId, text) => {
+    setNotes((prev) => ({ ...prev, [exId]: text }));
+    dataRef.current = {
+      ...dataRef.current,
+      notes: { ...dataRef.current.notes, [exId]: text },
+    };
+    if (noteTimer.current) clearTimeout(noteTimer.current);
+    noteTimer.current = setTimeout(() => {
+      try { persist(); } catch (e) {}
+    }, 800);
+  };
+
+  const dispName = (ex) => renames[ex.id] || ex.name;
+
+  const startRename = (ex) => {
+    setEditingEx(ex.id);
+    setEditText(dispName(ex));
+    setConfirmRemoveEx(null);
+  };
+
+  const saveRename = (ex) => {
+    const name = editText.trim();
+    setEditingEx(null);
+    if (!name || name === dispName(ex)) return;
+    const nextRenames = { ...dataRef.current.renames, [ex.id]: name };
+    dataRef.current = { ...dataRef.current, renames: nextRenames };
+    setRenames(nextRenames);
+    try { persist(); } catch (e) {}
+  };
+
+  const addExercise = () => {
+    const name = addName.trim();
+    if (!name) return;
+    const sets = Math.min(6, Math.max(1, addSets));
+    const ex = {
+      id: "c" + Date.now(),
+      name,
+      target: addTarget.trim() || `${sets} sets`,
+      sets,
+      unit: "lb",
+      step: 5,
+    };
+    const nextCustom = { ...dataRef.current.custom, [day.id]: [...(dataRef.current.custom[day.id] || []), ex] };
+    dataRef.current = { ...dataRef.current, custom: nextCustom };
+    setCustom(nextCustom);
+    setAddName("");
+    setAddTarget("");
+    setAddSets(3);
+    setAddOpen(false);
+    try { persist(); } catch (e) { alert("Couldn't save the new exercise — your browser may be blocking storage."); }
+  };
+
+  const removeExercise = (exId) => {
+    const isCustom = (custom[day.id] || []).some((e) => e.id === exId);
+    if (isCustom) {
+      const nextCustom = { ...dataRef.current.custom, [day.id]: (dataRef.current.custom[day.id] || []).filter((e) => e.id !== exId) };
+      dataRef.current = { ...dataRef.current, custom: nextCustom };
+      setCustom(nextCustom);
+    } else {
+      const nextRemoved = [...dataRef.current.removed, exId];
+      dataRef.current = { ...dataRef.current, removed: nextRemoved };
+      setRemoved(nextRemoved);
+    }
+    setConfirmRemoveEx(null);
+    try { persist(); } catch (e) { alert("Couldn't save the removal — your browser may be blocking storage."); }
+  };
+
+  const doImport = () => {
+    try {
+      const parsed = JSON.parse(importText);
+      if (!parsed || typeof parsed !== "object" || (!parsed.records && !parsed.sessions)) {
+        setImportMsg("That doesn't look like a Lift Log backup — check you pasted the whole thing.");
+        return;
+      }
+      const next = {
+        records: parsed.records || {},
+        sessions: parsed.sessions || [],
+        notes: parsed.notes || {},
+        custom: parsed.custom || {},
+        removed: parsed.removed || [],
+        renames: parsed.renames || {},
+      };
+      dataRef.current = next;
+      setRecords(next.records);
+      setSessions(next.sessions);
+      setNotes(next.notes);
+      setCustom(next.custom);
+      setRemoved(next.removed);
+      setRenames(next.renames);
+      const initLoads = {};
+      const allEx = [...ALL_EX, ...Object.values(next.custom).flat()];
+      allEx.forEach((ex) => {
+        const hist = next.records[ex.id];
+        if (hist && hist.length) {
+          const last = hist[hist.length - 1].ws || [];
+          initLoads[ex.id] = Array(ex.sets).fill(0).map((_, i) => (typeof last[i] === "number" ? last[i] : last[last.length - 1] || 0));
+        }
+      });
+      setLoads(initLoads);
+      setImportText("");
+      setBackupMode(null);
+      try {
+        persist();
+        setImportMsg("Backup restored and saved.");
+      } catch (e) {
+        setImportMsg("Backup restored for this session (storage unavailable — export again before closing).");
+      }
+      setTimeout(() => setImportMsg(""), 5000);
+    } catch (e) {
+      setImportMsg("Couldn't read that backup — make sure you pasted the exact exported text.");
+    }
+  };
+
+  const doneCount = dayExercises.filter((ex) => {
+    const arr = done[ex.id];
+    return arr && arr.every(Boolean);
+  }).length;
+
+  const finishDay = () => {
+    const today = todayISO();
+    const recs = { ...dataRef.current.records };
+    const entries = [];
+    dayExercises.forEach((ex) => {
+      const ws = getLoads(ex);
+      const doneArr = done[ex.id] || [];
+      const setsDone = doneArr.filter(Boolean).length;
+      const anyWeight = ws.some((w) => w > 0);
+      if (anyWeight || setsDone > 0) {
+        const hist = recs[ex.id] ? [...recs[ex.id]] : [];
+        const filtered = hist.filter((h) => h.d !== today);
+        filtered.push({ d: today, ws, sd: setsDone });
+        recs[ex.id] = filtered.slice(-30);
+        entries.push({ exId: ex.id, name: dispName(ex), unit: ex.unit, ws, setsDone, sets: ex.sets });
+      }
+    });
+    if (entries.length === 0) {
+      alert("Nothing to save yet — log a weight or check off a set first.");
+      return;
+    }
+    const sess = dataRef.current.sessions.filter((s) => !(s.d === today && s.dayId === day.id));
+    sess.push({ d: today, dayId: day.id, entries });
+    sess.sort((a, b) => (a.d < b.d ? -1 : 1));
+    dataRef.current = { ...dataRef.current, records: recs, sessions: sess.slice(-120) };
+    setRecords(recs);
+    setSessions(dataRef.current.sessions);
+    try {
+      persist();
+      setFlash(true);
+      setTimeout(() => setFlash(false), 4000);
+      setDone((prev) => {
+        const next = { ...prev };
+        dayExercises.forEach((ex) => delete next[ex.id]);
+        return next;
+      });
+    } catch (e) {
+      alert("Couldn't save — your browser may be blocking storage (private/incognito mode?). Your inputs are still on screen; use Export in the History tab to back them up.");
+    }
+  };
+
+  const deleteSession = (idx) => {
+    const sess = [...dataRef.current.sessions];
+    sess.splice(idx, 1);
+    dataRef.current = { ...dataRef.current, sessions: sess };
+    setSessions(sess);
+    setConfirmDelete(null);
+    try { persist(); } catch (e) { alert("Couldn't save the deletion — try again."); }
+  };
+
+  const lastEntry = (exId) => {
+    const hist = records[exId];
+    if (!hist || !hist.length) return null;
+    return hist[hist.length - 1];
+  };
+
+  const isComplete = (e, sets) => e.sd === undefined || e.sd >= sets;
+
+  const lastCompleted = (ex) => {
+    const hist = records[ex.id];
+    if (!hist || !hist.length) return null;
+    for (let i = hist.length - 1; i >= 0; i--) {
+      if (isComplete(hist[i], ex.sets)) return hist[i];
+    }
+    return null;
+  };
+
+  const trend = (ex) => {
+    const hist = (records[ex.id] || []).filter((e) => isComplete(e, ex.sets));
+    if (hist.length < 2) return null;
+    const diff = maxW(hist[hist.length - 1].ws) - maxW(hist[hist.length - 2].ws);
+    if (diff > 0) return "up";
+    if (diff < 0) return "down";
+    return "flat";
+  };
+
+  const reversedSessions = [...sessions].reverse();
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#131417", fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif", color: "#ECEAE4" }}>
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "20px 16px 120px" }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: 26, letterSpacing: "-0.5px", textTransform: "uppercase" }}>
+            Lift<span style={{ color: day.color === "#E8E6DF" ? "#A9A69C" : day.color }}> Log</span>
+          </div>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#8B8E94" }}>
+            {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+          </div>
+        </div>
+
+        {/* Save confirmation — visible from any view */}
+        {flash && (
+          <div style={{
+            background: "#1E3325", border: "1px solid #3D8A4E", borderRadius: 12,
+            padding: "10px 14px", marginBottom: 14, fontSize: 13, fontWeight: 600, color: "#8FD9A0",
+          }}>
+            ✓ Workout saved — it's stored on this device and will be here next time.
+          </div>
+        )}
+
+        {/* Storage warning */}
+        {loaded && !storageOk && (
+          <div style={{
+            background: "#3A2222", border: "1px solid #C0392B", borderRadius: 12,
+            padding: "10px 14px", marginBottom: 14, fontSize: 12.5, lineHeight: 1.5, color: "#F0C7C0",
+          }}>
+            ⚠ This browser is blocking storage (private/incognito mode?). Workouts won't survive closing the tab — use Export in the History tab to back up before you leave.
+          </div>
+        )}
+
+        {/* View toggle */}
+        <div style={{ display: "flex", background: "#1D1F23", borderRadius: 12, padding: 4, marginBottom: 16 }}>
+          {[
+            { id: "today", label: "Today" },
+            { id: "history", label: `History${sessions.length ? ` · ${sessions.length}` : ""}` },
+          ].map((v) => (
+            <button
+              key={v.id}
+              onClick={() => { setView(v.id); setConfirmDelete(null); setConfirmRemoveEx(null); }}
+              style={{
+                flex: 1, border: "none", cursor: "pointer", borderRadius: 9, padding: "8px 0",
+                background: view === v.id ? "#2C2F35" : "transparent",
+                color: view === v.id ? "#ECEAE4" : "#8B8E94",
+                fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 13,
+                textTransform: "uppercase", letterSpacing: "0.4px",
+              }}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ————— TODAY VIEW ————— */}
+        {view === "today" && (
+          <React.Fragment>
+            <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+              {PROGRAM.map((d, i) => {
+                const active = d.id === activeDay;
+                const light = d.id === "cardio";
+                return (
+                  <button
+                    key={d.id}
+                    className="daytab"
+                    onClick={() => { setActiveDay(d.id); setExpanded(null); setConfirmRemoveEx(null); setAddOpen(false); setEditingEx(null); }}
+                    style={{
+                      flex: 1, border: "none", cursor: "pointer", borderRadius: 14,
+                      padding: "10px 0 8px",
+                      background: active ? d.color : "#1D1F23",
+                      color: active ? (light ? "#17181B" : "#FBFAF7") : "#9A9DA3",
+                      opacity: active ? 1 : 0.85,
+                      boxShadow: active ? `0 4px 14px ${d.color}44` : "none",
+                    }}
+                  >
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, opacity: 0.75 }}>D{i + 1}</div>
+                    <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.3px" }}>{d.label}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ fontSize: 12.5, color: "#8B8E94", margin: "10px 2px 16px" }}>{day.sub}</div>
+
+            {!loaded ? (
+              <div style={{ textAlign: "center", padding: "40px 0", color: "#8B8E94", fontSize: 14 }}>Loading your log…</div>
+            ) : (
+              <React.Fragment>
+                {dayExercises.map((ex) => {
+                  const last = lastEntry(ex.id);
+                  const lastDone = lastCompleted(ex);
+                  const tr = trend(ex);
+                  const doneArr = done[ex.id] || Array(ex.sets).fill(false);
+                  const allDone = doneArr.every(Boolean);
+                  const exLoads = getLoads(ex);
+                  const hist = records[ex.id] || [];
+                  const isOpen = expanded === ex.id;
+                  return (
+                    <div key={ex.id} style={{
+                      background: "#1C1E22", borderRadius: 16, padding: "14px 14px 12px", marginBottom: 10,
+                      borderLeft: `4px solid ${allDone ? day.color : "#2A2D33"}`,
+                    }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                        {editingEx === ex.id ? (
+                          <input
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            onBlur={() => saveRename(ex)}
+                            onKeyDown={(e) => { if (e.key === "Enter") saveRename(ex); if (e.key === "Escape") setEditingEx(null); }}
+                            autoFocus
+                            style={{
+                              flex: 1, background: "#131417", border: `1.5px solid ${day.color}88`, borderRadius: 8,
+                              color: "#ECEAE4", fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 15,
+                              padding: "5px 10px", outline: "none",
+                            }}
+                          />
+                        ) : (
+                          <button
+                            onClick={() => setExpanded(isOpen ? null : ex.id)}
+                            style={{ background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer", color: "inherit", flex: 1 }}
+                          >
+                            <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.25 }}>{dispName(ex)}</div>
+                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, color: "#8B8E94", marginTop: 3 }}>
+                              {ex.target}
+                              {lastDone && (
+                                <span style={{ marginLeft: 8, color: tr === "up" ? "#6FBF7E" : tr === "down" ? "#C97A6D" : "#8B8E94" }}>
+                                  ✓ last {fmtWs(lastDone.ws)}{ex.unit === "lb" ? "" : ` ${ex.unit}`} · {fmtDate(lastDone.d)}{tr === "up" ? " ↑" : tr === "down" ? " ↓" : ""}
+                                </span>
+                              )}
+                              {!lastDone && last && (
+                                <span style={{ marginLeft: 8, color: "#8B8E94" }}>
+                                  partial {fmtWs(last.ws)}{ex.unit === "lb" ? "" : ` ${ex.unit}`} · {fmtDate(last.d)}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        )}
+                        {editingEx !== ex.id && (confirmRemoveEx === ex.id ? (
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            <button onClick={() => removeExercise(ex.id)} style={{ ...miniBtn, background: "#C0392B", color: "#FBFAF7" }}>Remove</button>
+                            <button onClick={() => setConfirmRemoveEx(null)} style={miniBtn}>Keep</button>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                            <button onClick={() => startRename(ex)} aria-label={`Rename ${dispName(ex)}`} style={{ ...miniBtn, fontSize: 12, padding: "2px 9px", color: "#5C6067" }}>✎</button>
+                            <button onClick={() => setConfirmRemoveEx(ex.id)} aria-label={`Remove ${dispName(ex)} from plan`} style={{ ...miniBtn, fontSize: 14, padding: "2px 10px", color: "#5C6067" }}>×</button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Per-set rows */}
+                      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                        {exLoads.map((w, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <button
+                              className="setdot"
+                              onClick={() => toggleSet(ex.id, i, ex.sets)}
+                              aria-label={`Set ${i + 1} ${doneArr[i] ? "done" : "not done"}`}
+                              style={{
+                                width: 30, height: 30, borderRadius: "50%", cursor: "pointer", flexShrink: 0,
+                                border: doneArr[i] ? "none" : "2px solid #3A3E45",
+                                background: doneArr[i] ? day.color : "transparent",
+                                color: doneArr[i] ? dayFg : "#5C6067",
+                                fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 700,
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                              }}
+                            >
+                              {i + 1}
+                            </button>
+                            <button className="stepbtn" onClick={() => bumpSet(ex, i, -ex.step)} style={btnStyle}>−</button>
+                            <div style={{ position: "relative", flex: 1, maxWidth: 120 }}>
+                              <input
+                                type="number"
+                                inputMode="decimal"
+                                value={w || ""}
+                                placeholder="0"
+                                onChange={(e) => setSetDirect(ex, i, e.target.value)}
+                                style={{
+                                  width: "100%", background: "#131417", border: `1.5px solid ${doneArr[i] ? day.color + "66" : "#2A2D33"}`, borderRadius: 10,
+                                  color: "#ECEAE4", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 16,
+                                  textAlign: "center", padding: "7px 30px 7px 8px", outline: "none",
+                                }}
+                              />
+                              <span style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", fontSize: 10.5, color: "#8B8E94", fontFamily: "'JetBrains Mono', monospace" }}>
+                                {ex.unit}
+                              </span>
+                            </div>
+                            <button className="stepbtn" onClick={() => bumpSet(ex, i, ex.step)} style={btnStyle}>+</button>
+                            {i < ex.sets - 1 ? (
+                              <button
+                                onClick={() => copyDown(ex, i)}
+                                aria-label="Copy this weight to the sets below"
+                                title="Copy to sets below"
+                                style={{ ...miniBtn, fontFamily: "'JetBrains Mono', monospace", fontSize: 13, padding: "5px 9px", flexShrink: 0 }}
+                              >
+                                ⇊
+                              </button>
+                            ) : (
+                              <div style={{ width: 31, flexShrink: 0 }} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {isOpen && (
+                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #2A2D33" }}>
+                          {hist.length === 0 ? (
+                            <div style={{ fontSize: 12.5, color: "#8B8E94" }}>No sessions logged yet — this is where your history will show up.</div>
+                          ) : (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                              {hist.slice(-6).reverse().map((h, i) => (
+                                <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, display: "flex", gap: 12 }}>
+                                  <span style={{ color: "#8B8E94", minWidth: 52 }}>{fmtDate(h.d)}</span>
+                                  <span style={{ fontWeight: 700 }}>{fmtWs(h.ws)}{ex.unit === "lb" ? "" : ` ${ex.unit}`}</span>
+                                  {!isComplete(h, ex.sets) && (
+                                    <span style={{ color: "#8B8E94", fontSize: 11 }}>{h.sd}/{ex.sets} sets</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Notes */}
+                      <textarea
+                        value={notes[ex.id] || ""}
+                        onChange={(e) => updateNote(ex.id, e.target.value)}
+                        placeholder="Notes — seat setting, grip, cues…"
+                        rows={notes[ex.id] && notes[ex.id].length > 45 ? 2 : 1}
+                        style={{
+                          width: "100%", marginTop: 10, resize: "none",
+                          background: "#17181C", border: "1px solid #26292E", borderRadius: 10,
+                          color: "#C9CBD0", fontFamily: "'Inter', sans-serif", fontSize: 12.5, lineHeight: 1.45,
+                          padding: "7px 10px", outline: "none",
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+
+                {/* Add exercise */}
+                {!addOpen ? (
+                  <button
+                    onClick={() => setAddOpen(true)}
+                    style={{
+                      width: "100%", background: "transparent", border: "2px dashed #2E3138", borderRadius: 16,
+                      padding: "14px 0", cursor: "pointer", color: "#8B8E94",
+                      fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 13,
+                      textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 10,
+                    }}
+                  >
+                    ＋ Add exercise
+                  </button>
+                ) : (
+                  <div style={{ background: "#1C1E22", borderRadius: 16, padding: "14px", marginBottom: 10, borderLeft: `4px solid ${day.color}` }}>
+                    <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 10 }}>
+                      New exercise — {day.label} day
+                    </div>
+                    <input
+                      value={addName}
+                      onChange={(e) => setAddName(e.target.value)}
+                      placeholder="Exercise name"
+                      autoFocus
+                      style={{
+                        width: "100%", background: "#131417", border: "1.5px solid #2A2D33", borderRadius: 10,
+                        color: "#ECEAE4", fontFamily: "'Inter', sans-serif", fontSize: 14,
+                        padding: "9px 12px", outline: "none", marginBottom: 8,
+                      }}
+                    />
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+                      <input
+                        value={addTarget}
+                        onChange={(e) => setAddTarget(e.target.value)}
+                        placeholder="Target (e.g. 3 × 8) — optional"
+                        style={{
+                          flex: 1, background: "#131417", border: "1.5px solid #2A2D33", borderRadius: 10,
+                          color: "#ECEAE4", fontFamily: "'Inter', sans-serif", fontSize: 13,
+                          padding: "9px 12px", outline: "none",
+                        }}
+                      />
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <button className="stepbtn" onClick={() => setAddSets((s) => Math.max(1, s - 1))} style={{ ...btnStyle, width: 32, height: 32, fontSize: 16 }}>−</button>
+                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, minWidth: 46, textAlign: "center" }}>{addSets} set{addSets > 1 ? "s" : ""}</div>
+                        <button className="stepbtn" onClick={() => setAddSets((s) => Math.min(6, s + 1))} style={{ ...btnStyle, width: 32, height: 32, fontSize: 16 }}>+</button>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        onClick={addExercise}
+                        disabled={!addName.trim()}
+                        style={{
+                          flex: 1, border: "none", borderRadius: 12, padding: "10px 0", cursor: addName.trim() ? "pointer" : "default",
+                          background: addName.trim() ? day.color : "#26292E", color: addName.trim() ? dayFg : "#5C6067",
+                          fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.4px",
+                        }}
+                      >
+                        Add to {day.label}
+                      </button>
+                      <button
+                        onClick={() => { setAddOpen(false); setAddName(""); setAddTarget(""); }}
+                        style={{ ...miniBtn, padding: "10px 16px", borderRadius: 12 }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
+            )}
+          </React.Fragment>
+        )}
+
+        {/* ————— HISTORY VIEW ————— */}
+        {view === "history" && (
+          <React.Fragment>
+            {importMsg && backupMode === null && (
+              <div style={{ background: "#1E3325", border: "1px solid #3D8A4E", borderRadius: 12, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: "#8FD9A0" }}>
+                {importMsg}
+              </div>
+            )}
+            {!loaded ? (
+              <div style={{ textAlign: "center", padding: "40px 0", color: "#8B8E94", fontSize: 14 }}>Loading your log…</div>
+            ) : sessions.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#8B8E94" }}>
+                <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 16, color: "#B8BAC0", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.5px" }}>No workouts yet</div>
+                <div style={{ fontSize: 13.5, lineHeight: 1.5 }}>Finish a workout on the Today tab and it'll be logged here — date, per-set weights, and sets completed.</div>
+              </div>
+            ) : (
+              reversedSessions.map((s, ri) => {
+                const idx = sessions.length - 1 - ri;
+                const d = DAY_BY_ID[s.dayId];
+                const light = s.dayId === "cardio";
+                const totalSets = s.entries.reduce((a, e) => a + e.setsDone, 0);
+                return (
+                  <div key={`${s.d}-${s.dayId}`} style={{ background: "#1C1E22", borderRadius: 16, padding: "14px 16px", marginBottom: 10, borderLeft: `4px solid ${d ? d.color : "#2A2D33"}` }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{
+                          fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.4px",
+                          background: d ? d.color : "#2A2D33", color: light ? "#17181B" : "#FBFAF7",
+                          borderRadius: 7, padding: "3px 9px",
+                        }}>{d ? d.label : s.dayId}</span>
+                        <span style={{ fontWeight: 600, fontSize: 14 }}>{fmtDateLong(s.d)}</span>
+                      </div>
+                      {confirmDelete === idx ? (
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button onClick={() => deleteSession(idx)} style={{ ...miniBtn, background: "#C0392B", color: "#FBFAF7" }}>Delete</button>
+                          <button onClick={() => setConfirmDelete(null)} style={miniBtn}>Keep</button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setConfirmDelete(idx)} aria-label="Delete session" style={{ ...miniBtn, fontSize: 14, padding: "2px 10px" }}>×</button>
+                      )}
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", rowGap: 6, columnGap: 12 }}>
+                      {s.entries.map((e) => {
+                        const ex = exMap[e.exId];
+                        const name = e.name || renames[e.exId] || (ex ? ex.name : e.exId);
+                        const unit = e.unit || (ex ? ex.unit : "lb");
+                        return (
+                          <React.Fragment key={e.exId}>
+                            <div style={{ fontSize: 13, color: "#C9CBD0" }}>{name}</div>
+                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12.5, fontWeight: 700, textAlign: "right" }}>
+                              {maxW(e.ws) > 0 ? `${fmtWs(e.ws)}${unit !== "lb" ? ` ${unit}` : ""}` : "—"}
+                            </div>
+                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, color: e.setsDone >= e.sets ? "#6FBF7E" : "#8B8E94", textAlign: "right", minWidth: 42 }}>
+                              {e.setsDone}/{e.sets} sets
+                            </div>
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                    <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px solid #2A2D33", fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#8B8E94" }}>
+                      {s.entries.length} exercises · {totalSets} sets completed
+                    </div>
+                  </div>
+                );
+              })
+            )}
+
+            {/* Backup — export/import your data manually */}
+            <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid #26292E" }}>
+              <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px", color: "#8B8E94", marginBottom: 10 }}>
+                Backup
+              </div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                <button onClick={() => { setBackupMode(backupMode === "export" ? null : "export"); setImportMsg(""); }} style={{ ...miniBtn, padding: "8px 14px", borderRadius: 10, background: backupMode === "export" ? "#2C2F35" : "#26292E" }}>
+                  Export data
+                </button>
+                <button onClick={() => { setBackupMode(backupMode === "import" ? null : "import"); setImportMsg(""); }} style={{ ...miniBtn, padding: "8px 14px", borderRadius: 10, background: backupMode === "import" ? "#2C2F35" : "#26292E" }}>
+                  Import data
+                </button>
+              </div>
+              {backupMode === "export" && (
+                <div>
+                  <div style={{ fontSize: 12.5, color: "#8B8E94", marginBottom: 8, lineHeight: 1.5 }}>
+                    Tap the box, select all, and copy. Paste it somewhere safe (your Notes app works well). Restore it any time with Import — including on another device.
+                  </div>
+                  <textarea
+                    readOnly
+                    value={JSON.stringify(dataRef.current)}
+                    onFocus={(e) => e.target.select()}
+                    rows={5}
+                    style={{
+                      width: "100%", resize: "none", background: "#131417", border: "1px solid #2A2D33", borderRadius: 10,
+                      color: "#C9CBD0", fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, lineHeight: 1.4,
+                      padding: "8px 10px", outline: "none",
+                    }}
+                  />
+                </div>
+              )}
+              {backupMode === "import" && (
+                <div>
+                  <div style={{ fontSize: 12.5, color: "#8B8E94", marginBottom: 8, lineHeight: 1.5 }}>
+                    Paste a previously exported backup below. This replaces what's currently in the app.
+                  </div>
+                  <textarea
+                    value={importText}
+                    onChange={(e) => setImportText(e.target.value)}
+                    placeholder="Paste your backup here…"
+                    rows={5}
+                    style={{
+                      width: "100%", resize: "none", background: "#131417", border: "1px solid #2A2D33", borderRadius: 10,
+                      color: "#C9CBD0", fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, lineHeight: 1.4,
+                      padding: "8px 10px", outline: "none", marginBottom: 8,
+                    }}
+                  />
+                  <button
+                    onClick={doImport}
+                    disabled={!importText.trim()}
+                    style={{
+                      border: "none", borderRadius: 10, padding: "9px 18px", cursor: importText.trim() ? "pointer" : "default",
+                      background: importText.trim() ? "#3D8A4E" : "#26292E", color: importText.trim() ? "#FBFAF7" : "#5C6067",
+                      fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.4px",
+                    }}
+                  >
+                    Restore backup
+                  </button>
+                  {importMsg && backupMode === "import" && (
+                    <div style={{ fontSize: 12.5, color: "#C97A6D", marginTop: 8 }}>{importMsg}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </React.Fragment>
+        )}
+      </div>
+
+      {/* Save bar — only on Today view */}
+      {view === "today" && (
+        <div style={{
+          position: "fixed", bottom: 0, left: 0, right: 0,
+          background: "linear-gradient(to top, #131417 65%, transparent)",
+          padding: "24px 16px 20px",
+        }}>
+          <div style={{ maxWidth: 480, margin: "0 auto" }}>
+            <button
+              onClick={finishDay}
+              style={{
+                width: "100%", border: "none", borderRadius: 16, padding: "15px 0", cursor: "pointer",
+                background: flash ? "#3D8A4E" : day.color, color: flash ? "#FBFAF7" : dayFg,
+                fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 15,
+                textTransform: "uppercase", letterSpacing: "0.5px",
+                boxShadow: `0 6px 20px ${day.color}55`,
+              }}
+            >
+              {flash ? "Saved ✓ — added to History" : `Finish ${day.label} · ${doneCount}/${dayExercises.length} done`}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const btnStyle = {
+  width: 38, height: 38, borderRadius: 12, border: "none", cursor: "pointer",
+  background: "#26292E", color: "#ECEAE4",
+  fontFamily: "'JetBrains Mono', monospace", fontSize: 19, fontWeight: 700,
+  display: "flex", alignItems: "center", justifyContent: "center",
+  transition: "transform 0.12s ease",
+  flexShrink: 0,
+};
+
+const miniBtn = {
+  border: "none", cursor: "pointer", borderRadius: 8, padding: "4px 10px",
+  background: "#26292E", color: "#B8BAC0",
+  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<LiftLog />);
+</script>
+</body>
+</html>
