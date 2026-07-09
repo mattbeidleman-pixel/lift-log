@@ -693,6 +693,7 @@ function LiftLog() {
   const [custom, setCustom] = useState({});
   const [removed, setRemoved] = useState([]);
   const [renames, setRenames] = useState({});
+  const [setCounts, setSetCounts] = useState({}); // { exId: overridden set count }
   const [editingEx, setEditingEx] = useState(null);
   const [editText, setEditText] = useState("");
   const [confirmRemoveEx, setConfirmRemoveEx] = useState(null);
@@ -712,7 +713,8 @@ function LiftLog() {
     notes: {},
     custom: {},
     removed: [],
-    renames: {}
+    renames: {},
+    setCounts: {}
   });
   const noteTimer = useRef(null);
   const storageOk = store.available;
@@ -723,6 +725,7 @@ function LiftLog() {
     let savedCustom = {};
     let savedRemoved = [];
     let savedRenames = {};
+    let savedSetCounts = {};
     try {
       const raw = store.get(STORAGE_KEY);
       if (raw) {
@@ -733,6 +736,7 @@ function LiftLog() {
         savedCustom = parsed.custom || {};
         savedRemoved = parsed.removed || [];
         savedRenames = parsed.renames || {};
+        savedSetCounts = parsed.setCounts || {};
       }
     } catch (e) {
       // corrupt or missing — start fresh
@@ -764,7 +768,8 @@ function LiftLog() {
       notes: savedNotes,
       custom: savedCustom,
       removed: savedRemoved,
-      renames: savedRenames
+      renames: savedRenames,
+      setCounts: savedSetCounts
     };
     setRecords(normRecs);
     setSessions(normSess);
@@ -772,6 +777,7 @@ function LiftLog() {
     setCustom(savedCustom);
     setRemoved(savedRemoved);
     setRenames(savedRenames);
+    setSetCounts(savedSetCounts);
     const initLoads = {};
     [...ALL_EX, ...allCustom].forEach(ex => {
       const hist = normRecs[ex.id];
@@ -787,7 +793,11 @@ function LiftLog() {
   const isLight = day.id === "cardio";
   const dayFg = isLight ? "#17181B" : "#FBFAF7";
   const removedSet = new Set(removed);
-  const dayExercises = [...day.exercises.filter(ex => !removedSet.has(ex.id)), ...(custom[day.id] || [])];
+  const withSets = ex => ({
+    ...ex,
+    sets: Math.min(6, Math.max(1, setCounts[ex.id] || ex.sets))
+  });
+  const dayExercises = [...day.exercises.filter(ex => !removedSet.has(ex.id)), ...(custom[day.id] || [])].map(withSets);
   const exMap = {
     ...EX_BY_ID,
     ...Object.fromEntries(Object.values(custom).flat().map(e => [e.id, e]))
@@ -817,29 +827,33 @@ function LiftLog() {
     });
   };
   const bumpSet = (ex, i, delta) => {
+    const cur = getLoadsFrom(loads, ex)[i];
+    const next = Math.max(0, Math.round((cur + delta) * 10) / 10);
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
       arr[i] = Math.max(0, Math.round((arr[i] + delta) * 10) / 10);
-      markSet(ex.id, i, ex.sets, arr[i] > 0);
       return {
         ...prev,
         [ex.id]: arr
       };
     });
+    markSet(ex.id, i, ex.sets, next > 0);
   };
   const setSetDirect = (ex, i, val) => {
     const n = parseFloat(val);
+    const v = isNaN(n) ? 0 : Math.max(0, n);
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
-      arr[i] = isNaN(n) ? 0 : Math.max(0, n);
-      markSet(ex.id, i, ex.sets, arr[i] > 0);
+      arr[i] = v;
       return {
         ...prev,
         [ex.id]: arr
       };
     });
+    markSet(ex.id, i, ex.sets, v > 0);
   };
   const copyDown = (ex, i) => {
+    const w = getLoadsFrom(loads, ex)[i];
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
       for (let j = i + 1; j < ex.sets; j++) arr[j] = arr[i];
@@ -848,6 +862,16 @@ function LiftLog() {
         [ex.id]: arr
       };
     });
+    if (w > 0) {
+      setDone(prev => {
+        const arr = prev[ex.id] ? [...prev[ex.id]] : Array(ex.sets).fill(false);
+        for (let j = i; j < ex.sets; j++) arr[j] = true;
+        return {
+          ...prev,
+          [ex.id]: arr
+        };
+      });
+    }
   };
   function getLoadsFrom(state, ex) {
     const cur = state[ex.id] || [];
@@ -897,6 +921,22 @@ function LiftLog() {
       renames: nextRenames
     };
     setRenames(nextRenames);
+    try {
+      persist();
+    } catch (e) {}
+  };
+  const changeSets = (ex, delta) => {
+    const next = Math.min(6, Math.max(1, ex.sets + delta));
+    if (next === ex.sets) return;
+    const nextCounts = {
+      ...dataRef.current.setCounts,
+      [ex.id]: next
+    };
+    dataRef.current = {
+      ...dataRef.current,
+      setCounts: nextCounts
+    };
+    setSetCounts(nextCounts);
     try {
       persist();
     } catch (e) {}
@@ -972,7 +1012,8 @@ function LiftLog() {
         notes: parsed.notes || {},
         custom: parsed.custom || {},
         removed: parsed.removed || [],
-        renames: parsed.renames || {}
+        renames: parsed.renames || {},
+        setCounts: parsed.setCounts || {}
       };
       dataRef.current = next;
       setRecords(next.records);
@@ -981,6 +1022,7 @@ function LiftLog() {
       setCustom(next.custom);
       setRemoved(next.removed);
       setRenames(next.renames);
+      setSetCounts(next.setCounts);
       const initLoads = {};
       const allEx = [...ALL_EX, ...Object.values(next.custom).flat()];
       allEx.forEach(ex => {
@@ -1016,7 +1058,7 @@ function LiftLog() {
     const entries = [];
     dayExercises.forEach(ex => {
       const ws = getLoads(ex);
-      const doneArr = done[ex.id] || [];
+      const doneArr = (done[ex.id] || []).slice(0, ex.sets);
       const setsDone = doneArr.filter(Boolean).length;
       const anyWeight = ws.some(w => w > 0);
       if (anyWeight || setsDone > 0) {
@@ -1271,7 +1313,7 @@ function LiftLog() {
     const last = lastEntry(ex.id);
     const lastDone = lastCompleted(ex);
     const tr = trend(ex);
-    const doneArr = done[ex.id] || Array(ex.sets).fill(false);
+    const doneArr = Array(ex.sets).fill(false).map((_, di) => Boolean((done[ex.id] || [])[di]));
     const allDone = doneArr.every(Boolean);
     const exLoads = getLoads(ex);
     const hist = records[ex.id] || [];
@@ -1479,7 +1521,36 @@ function LiftLog() {
         width: 31,
         flexShrink: 0
       }
-    })))), isOpen && /*#__PURE__*/React.createElement("div", {
+    })))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "flex-end",
+        gap: 6,
+        marginTop: 8
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => changeSets(ex, -1),
+      disabled: ex.sets <= 1,
+      style: {
+        ...miniBtn,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 11,
+        padding: "4px 10px",
+        opacity: ex.sets <= 1 ? 0.4 : 1,
+        cursor: ex.sets <= 1 ? "default" : "pointer"
+      }
+    }, "− set"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => changeSets(ex, 1),
+      disabled: ex.sets >= 6,
+      style: {
+        ...miniBtn,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 11,
+        padding: "4px 10px",
+        opacity: ex.sets >= 6 ? 0.4 : 1,
+        cursor: ex.sets >= 6 ? "default" : "pointer"
+      }
+    }, "+ set")), isOpen && /*#__PURE__*/React.createElement("div", {
       style: {
         marginTop: 12,
         paddingTop: 10,
