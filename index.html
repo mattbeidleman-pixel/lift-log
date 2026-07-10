@@ -733,6 +733,7 @@ function LiftLog() {
   const noteTimer = useRef(null);
   const autoTimer = useRef(null);
   const noticeTimer = useRef(null);
+  const dateRef = useRef(todayISO());
   const storageOk = store.available;
   useEffect(() => {
     let recs = {};
@@ -1257,6 +1258,31 @@ function LiftLog() {
       // storage warning banner covers persistent failure; data stays in memory
     }
   };
+
+  // New-day reset: if the calendar date changes while the app stays open/resumed,
+  // clear the completed-set circles so every day starts fresh. Weights stay
+  // prefilled from the last session for progressive overload.
+  useEffect(() => {
+    const checkDate = () => {
+      const t = todayISO();
+      if (t !== dateRef.current) {
+        dateRef.current = t;
+        setDone({});
+        setLastSaved(null);
+      }
+    };
+    const iv = setInterval(checkDate, 30000);
+    const onVis = () => {
+      if (!document.hidden) checkDate();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", checkDate);
+    return () => {
+      clearInterval(iv);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", checkDate);
+    };
+  }, []);
 
   // Auto-save shortly after any set is logged or changed
   useEffect(() => {
