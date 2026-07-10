@@ -694,14 +694,24 @@ function LiftLog() {
   const [removed, setRemoved] = useState([]);
   const [renames, setRenames] = useState({});
   const [setCounts, setSetCounts] = useState({}); // { exId: overridden set count }
+  const [targets, setTargets] = useState({}); // { exId: overridden reps text }
+  const [dayEdits, setDayEdits] = useState({}); // { dayId: { label, sub } }
+  const [customDays, setCustomDays] = useState([]); // user-added days
+  const [removedDays, setRemovedDays] = useState([]); // deleted built-in day ids
+  const [pendingDeleteDay, setPendingDeleteDay] = useState(null); // day awaiting confirmation
+  const [notice, setNotice] = useState("");
+  const [editingDay, setEditingDay] = useState(false);
+  const [editDayName, setEditDayName] = useState("");
+  const [editDaySub, setEditDaySub] = useState("");
   const [editingEx, setEditingEx] = useState(null);
   const [editText, setEditText] = useState("");
+  const [editTarget, setEditTarget] = useState("");
   const [confirmRemoveEx, setConfirmRemoveEx] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addName, setAddName] = useState("");
   const [addSets, setAddSets] = useState(3);
   const [addTarget, setAddTarget] = useState("");
-  const [flash, setFlash] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [backupMode, setBackupMode] = useState(null);
@@ -714,9 +724,15 @@ function LiftLog() {
     custom: {},
     removed: [],
     renames: {},
-    setCounts: {}
+    setCounts: {},
+    targets: {},
+    dayEdits: {},
+    customDays: [],
+    removedDays: []
   });
   const noteTimer = useRef(null);
+  const autoTimer = useRef(null);
+  const noticeTimer = useRef(null);
   const storageOk = store.available;
   useEffect(() => {
     let recs = {};
@@ -726,6 +742,10 @@ function LiftLog() {
     let savedRemoved = [];
     let savedRenames = {};
     let savedSetCounts = {};
+    let savedTargets = {};
+    let savedDayEdits = {};
+    let savedCustomDays = [];
+    let savedRemovedDays = [];
     try {
       const raw = store.get(STORAGE_KEY);
       if (raw) {
@@ -737,6 +757,10 @@ function LiftLog() {
         savedRemoved = parsed.removed || [];
         savedRenames = parsed.renames || {};
         savedSetCounts = parsed.setCounts || {};
+        savedTargets = parsed.targets || {};
+        savedDayEdits = parsed.dayEdits || {};
+        savedCustomDays = parsed.customDays || [];
+        savedRemovedDays = parsed.removedDays || [];
       }
     } catch (e) {
       // corrupt or missing — start fresh
@@ -769,7 +793,11 @@ function LiftLog() {
       custom: savedCustom,
       removed: savedRemoved,
       renames: savedRenames,
-      setCounts: savedSetCounts
+      setCounts: savedSetCounts,
+      targets: savedTargets,
+      dayEdits: savedDayEdits,
+      customDays: savedCustomDays,
+      removedDays: savedRemovedDays
     };
     setRecords(normRecs);
     setSessions(normSess);
@@ -778,6 +806,10 @@ function LiftLog() {
     setRemoved(savedRemoved);
     setRenames(savedRenames);
     setSetCounts(savedSetCounts);
+    setTargets(savedTargets);
+    setDayEdits(savedDayEdits);
+    setCustomDays(savedCustomDays);
+    setRemovedDays(savedRemovedDays);
     const initLoads = {};
     [...ALL_EX, ...allCustom].forEach(ex => {
       const hist = normRecs[ex.id];
@@ -787,15 +819,34 @@ function LiftLog() {
       }
     });
     setLoads(initLoads);
+    // Restore today's completed-set circles so a mid-workout app restart picks up where you left off
+    const initDone = {};
+    normSess.filter(s => s.d === todayISO()).forEach(s => {
+      s.entries.forEach(e => {
+        const ex = lookup(e.exId);
+        const sets = e.sets || (ex ? ex.sets : 3);
+        initDone[e.exId] = Array(sets).fill(false).map((_, i) => i < (e.setsDone || 0));
+      });
+    });
+    setDone(initDone);
     setLoaded(true);
   }, []);
-  const day = PROGRAM.find(d => d.id === activeDay);
+  const removedDaySet = new Set(removedDays);
+  let baseDays = [...PROGRAM.filter(d => !removedDaySet.has(d.id)), ...customDays];
+  if (baseDays.length === 0) baseDays = [PROGRAM[0]]; // never allow an empty plan
+  const days = baseDays.map(d => ({
+    ...d,
+    label: (dayEdits[d.id] || {}).label || d.label,
+    sub: (dayEdits[d.id] || {}).sub || d.sub
+  }));
+  const day = days.find(d => d.id === activeDay) || days[0];
   const isLight = day.id === "cardio";
   const dayFg = isLight ? "#17181B" : "#FBFAF7";
   const removedSet = new Set(removed);
   const withSets = ex => ({
     ...ex,
-    sets: Math.min(6, Math.max(1, setCounts[ex.id] || ex.sets))
+    sets: Math.min(6, Math.max(1, setCounts[ex.id] || ex.sets)),
+    target: targets[ex.id] || ex.target
   });
   const dayExercises = [...day.exercises.filter(ex => !removedSet.has(ex.id)), ...(custom[day.id] || [])].map(withSets);
   const exMap = {
@@ -906,21 +957,118 @@ function LiftLog() {
   const startRename = ex => {
     setEditingEx(ex.id);
     setEditText(dispName(ex));
+    setEditTarget(ex.target);
     setConfirmRemoveEx(null);
   };
-  const saveRename = ex => {
+  const saveEdit = ex => {
     const name = editText.trim();
+    const target = editTarget.trim();
     setEditingEx(null);
-    if (!name || name === dispName(ex)) return;
     const nextRenames = {
-      ...dataRef.current.renames,
-      [ex.id]: name
+      ...dataRef.current.renames
+    };
+    if (name) nextRenames[ex.id] = name;
+    const nextTargets = {
+      ...dataRef.current.targets
+    };
+    if (target) nextTargets[ex.id] = target;else delete nextTargets[ex.id];
+    dataRef.current = {
+      ...dataRef.current,
+      renames: nextRenames,
+      targets: nextTargets
+    };
+    setRenames(nextRenames);
+    setTargets(nextTargets);
+    try {
+      persist();
+    } catch (e) {}
+  };
+  const showNotice = msg => {
+    setNotice(msg);
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
+    noticeTimer.current = setTimeout(() => setNotice(""), 4000);
+  };
+  const NEW_DAY_COLORS = ["#8E5AC8", "#D97A34", "#3AA6A0", "#C24E7A", "#7A8C3D", "#5A6FC8"];
+  const addDay = () => {
+    const color = NEW_DAY_COLORS[dataRef.current.customDays.length % NEW_DAY_COLORS.length];
+    const nd = {
+      id: "d" + Date.now(),
+      label: "New",
+      sub: "Tap ✎ to name this day, then add exercises below",
+      color,
+      exercises: []
+    };
+    const nextCustomDays = [...dataRef.current.customDays, nd];
+    dataRef.current = {
+      ...dataRef.current,
+      customDays: nextCustomDays
+    };
+    setCustomDays(nextCustomDays);
+    setActiveDay(nd.id);
+    setEditingDay(false);
+    try {
+      persist();
+    } catch (e) {}
+  };
+  const requestDeleteDay = d => {
+    if (days.length <= 1) {
+      showNotice("You need at least one day in the plan.");
+      return;
+    }
+    setPendingDeleteDay(d);
+  };
+  const confirmDeleteDay = () => {
+    const d = pendingDeleteDay;
+    if (!d) return;
+    setPendingDeleteDay(null);
+    const isCustom = dataRef.current.customDays.some(cd => cd.id === d.id);
+    if (isCustom) {
+      const nextCustomDays = dataRef.current.customDays.filter(cd => cd.id !== d.id);
+      dataRef.current = {
+        ...dataRef.current,
+        customDays: nextCustomDays
+      };
+      setCustomDays(nextCustomDays);
+    } else {
+      const nextRemovedDays = [...dataRef.current.removedDays, d.id];
+      dataRef.current = {
+        ...dataRef.current,
+        removedDays: nextRemovedDays
+      };
+      setRemovedDays(nextRemovedDays);
+    }
+    if (activeDay === d.id) {
+      const remaining = days.filter(x => x.id !== d.id);
+      setActiveDay(remaining[0].id);
+    }
+    try {
+      persist();
+    } catch (e) {}
+  };
+  const startDayEdit = () => {
+    setEditingDay(true);
+    setEditDayName(day.label);
+    setEditDaySub(day.sub);
+  };
+  const saveDayEdit = () => {
+    const label = editDayName.trim();
+    const sub = editDaySub.trim();
+    setEditingDay(false);
+    const cur = dataRef.current.dayEdits[day.id] || {};
+    const entry = {
+      ...cur
+    };
+    if (label) entry.label = label;
+    if (sub) entry.sub = sub;else delete entry.sub;
+    const nextDayEdits = {
+      ...dataRef.current.dayEdits,
+      [day.id]: entry
     };
     dataRef.current = {
       ...dataRef.current,
-      renames: nextRenames
+      dayEdits: nextDayEdits
     };
-    setRenames(nextRenames);
+    setDayEdits(nextDayEdits);
     try {
       persist();
     } catch (e) {}
@@ -969,7 +1117,7 @@ function LiftLog() {
     try {
       persist();
     } catch (e) {
-      alert("Couldn't save the new exercise — your browser may be blocking storage.");
+      showNotice("Couldn't save the new exercise — your browser may be blocking storage.");
     }
   };
   const removeExercise = exId => {
@@ -996,7 +1144,7 @@ function LiftLog() {
     try {
       persist();
     } catch (e) {
-      alert("Couldn't save the removal — your browser may be blocking storage.");
+      showNotice("Couldn't save the removal — your browser may be blocking storage.");
     }
   };
   const doImport = () => {
@@ -1013,7 +1161,11 @@ function LiftLog() {
         custom: parsed.custom || {},
         removed: parsed.removed || [],
         renames: parsed.renames || {},
-        setCounts: parsed.setCounts || {}
+        setCounts: parsed.setCounts || {},
+        targets: parsed.targets || {},
+        dayEdits: parsed.dayEdits || {},
+        customDays: parsed.customDays || [],
+        removedDays: parsed.removedDays || []
       };
       dataRef.current = next;
       setRecords(next.records);
@@ -1023,6 +1175,10 @@ function LiftLog() {
       setRemoved(next.removed);
       setRenames(next.renames);
       setSetCounts(next.setCounts);
+      setTargets(next.targets);
+      setDayEdits(next.dayEdits);
+      setCustomDays(next.customDays);
+      setRemovedDays(next.removedDays);
       const initLoads = {};
       const allEx = [...ALL_EX, ...Object.values(next.custom).flat()];
       allEx.forEach(ex => {
@@ -1050,7 +1206,7 @@ function LiftLog() {
     const arr = done[ex.id];
     return arr && arr.every(Boolean);
   }).length;
-  const finishDay = () => {
+  const autoSaveNow = () => {
     const today = todayISO();
     const recs = {
       ...dataRef.current.records
@@ -1060,8 +1216,7 @@ function LiftLog() {
       const ws = getLoads(ex);
       const doneArr = (done[ex.id] || []).slice(0, ex.sets);
       const setsDone = doneArr.filter(Boolean).length;
-      const anyWeight = ws.some(w => w > 0);
-      if (anyWeight || setsDone > 0) {
+      if (setsDone > 0) {
         const hist = recs[ex.id] ? [...recs[ex.id]] : [];
         const filtered = hist.filter(h => h.d !== today);
         filtered.push({
@@ -1080,10 +1235,7 @@ function LiftLog() {
         });
       }
     });
-    if (entries.length === 0) {
-      alert("Nothing to save yet — log a weight or check off a set first.");
-      return;
-    }
+    if (entries.length === 0) return;
     const sess = dataRef.current.sessions.filter(s => !(s.d === today && s.dayId === day.id));
     sess.push({
       d: today,
@@ -1100,19 +1252,19 @@ function LiftLog() {
     setSessions(dataRef.current.sessions);
     try {
       persist();
-      setFlash(true);
-      setTimeout(() => setFlash(false), 4000);
-      setDone(prev => {
-        const next = {
-          ...prev
-        };
-        dayExercises.forEach(ex => delete next[ex.id]);
-        return next;
-      });
+      setLastSaved(new Date());
     } catch (e) {
-      alert("Couldn't save — your browser may be blocking storage (private/incognito mode?). Your inputs are still on screen; use Export in the History tab to back them up.");
+      // storage warning banner covers persistent failure; data stays in memory
     }
   };
+
+  // Auto-save shortly after any set is logged or changed
+  useEffect(() => {
+    if (!loaded) return;
+    if (autoTimer.current) clearTimeout(autoTimer.current);
+    autoTimer.current = setTimeout(autoSaveNow, 600);
+    return () => clearTimeout(autoTimer.current);
+  }, [loads, done]);
   const deleteSession = idx => {
     const sess = [...dataRef.current.sessions];
     sess.splice(idx, 1);
@@ -1125,7 +1277,7 @@ function LiftLog() {
     try {
       persist();
     } catch (e) {
-      alert("Couldn't save the deletion — try again.");
+      showNotice("Couldn't save the deletion — try again.");
     }
   };
   const lastEntry = exId => {
@@ -1193,18 +1345,7 @@ function LiftLog() {
     weekday: "short",
     month: "short",
     day: "numeric"
-  }))), flash && /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: "#1E3325",
-      border: "1px solid #3D8A4E",
-      borderRadius: 12,
-      padding: "10px 14px",
-      marginBottom: 14,
-      fontSize: 13,
-      fontWeight: 600,
-      color: "#8FD9A0"
-    }
-  }, "✓ Workout saved — it's stored on this device and will be here next time."), loaded && !storageOk && /*#__PURE__*/React.createElement("div", {
+  }))), loaded && !storageOk && /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#3A2222",
       border: "1px solid #C0392B",
@@ -1215,7 +1356,18 @@ function LiftLog() {
       lineHeight: 1.5,
       color: "#F0C7C0"
     }
-  }, "⚠ This browser is blocking storage (private/incognito mode?). Workouts won't survive closing the tab — use Export in the History tab to back up before you leave."), /*#__PURE__*/React.createElement("div", {
+  }, "⚠ This browser is blocking storage (private/incognito mode?). Workouts won't survive closing the tab — use Export in the History tab to back up before you leave."), notice && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#3A3222",
+      border: "1px solid #B7950B",
+      borderRadius: 12,
+      padding: "10px 14px",
+      marginBottom: 14,
+      fontSize: 12.5,
+      lineHeight: 1.5,
+      color: "#EBDCA8"
+    }
+  }, notice), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       background: "#1D1F23",
@@ -1256,7 +1408,7 @@ function LiftLog() {
       gap: 8,
       marginBottom: 6
     }
-  }, PROGRAM.map((d, i) => {
+  }, days.map((d, i) => {
     const active = d.id === activeDay;
     const light = d.id === "cardio";
     return /*#__PURE__*/React.createElement("button", {
@@ -1268,19 +1420,37 @@ function LiftLog() {
         setConfirmRemoveEx(null);
         setAddOpen(false);
         setEditingEx(null);
+        setEditingDay(false);
       },
       style: {
         flex: 1,
         border: "none",
         cursor: "pointer",
         borderRadius: 14,
+        position: "relative",
         padding: "10px 0 8px",
         background: active ? d.color : "#1D1F23",
         color: active ? light ? "#17181B" : "#FBFAF7" : "#9A9DA3",
         opacity: active ? 1 : 0.85,
         boxShadow: active ? `0 4px 14px ${d.color}44` : "none"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("span", {
+      onClick: e => {
+        e.stopPropagation();
+        requestDeleteDay(d);
+      },
+      role: "button",
+      "aria-label": `Delete ${d.label} day`,
+      style: {
+        position: "absolute",
+        top: 1,
+        right: 5,
+        fontSize: 11,
+        lineHeight: 1.4,
+        padding: "1px 3px",
+        color: active ? light ? "#17181B88" : "#FBFAF788" : "#5C6067"
+      }
+    }, "×"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 10,
@@ -1296,13 +1466,111 @@ function LiftLog() {
         letterSpacing: "0.3px"
       }
     }, d.label));
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: addDay,
+    "aria-label": "Add a day",
+    style: {
+      width: 36,
+      flexShrink: 0,
+      border: "2px dashed #2E3138",
+      background: "transparent",
+      color: "#8B8E94",
+      borderRadius: 14,
+      cursor: "pointer",
+      fontSize: 17,
+      fontWeight: 700
+    }
+  }, "＋")), editingDay ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: "10px 0 16px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: editDayName,
+    onChange: e => setEditDayName(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter") saveDayEdit();
+      if (e.key === "Escape") setEditingDay(false);
+    },
+    autoFocus: true,
+    placeholder: "Day name",
+    style: {
+      background: "#131417",
+      border: `1.5px solid ${day.color}88`,
+      borderRadius: 8,
+      color: "#ECEAE4",
+      fontFamily: "'Inter', sans-serif",
+      fontWeight: 600,
+      fontSize: 14,
+      padding: "6px 10px",
+      outline: "none"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: editDaySub,
+    onChange: e => setEditDaySub(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter") saveDayEdit();
+      if (e.key === "Escape") setEditingDay(false);
+    },
+    placeholder: "Description — e.g. Chest · Shoulders · Abs",
+    style: {
+      flex: 1,
+      minWidth: 0,
+      background: "#131417",
+      border: "1.5px solid #2A2D33",
+      borderRadius: 8,
+      color: "#ECEAE4",
+      fontFamily: "'Inter', sans-serif",
+      fontSize: 12.5,
+      padding: "6px 10px",
+      outline: "none"
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: saveDayEdit,
+    style: {
+      ...miniBtn,
+      background: day.color,
+      color: dayFg,
+      padding: "7px 14px"
+    }
+  }, "Save"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setEditingDay(false),
+    style: {
+      ...miniBtn,
+      padding: "7px 10px"
+    }
+  }, "Cancel"))) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      margin: "10px 2px 16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12.5,
       color: "#8B8E94",
-      margin: "10px 2px 16px"
+      flex: 1
     }
-  }, day.sub), !loaded ? /*#__PURE__*/React.createElement("div", {
+  }, day.sub), /*#__PURE__*/React.createElement("button", {
+    onClick: startDayEdit,
+    "aria-label": `Rename ${day.label} day`,
+    style: {
+      ...miniBtn,
+      fontSize: 12,
+      padding: "2px 9px",
+      color: "#5C6067",
+      flexShrink: 0
+    }
+  }, "✎")), !loaded ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       padding: "40px 0",
@@ -1333,17 +1601,23 @@ function LiftLog() {
         alignItems: "flex-start",
         gap: 8
       }
-    }, editingEx === ex.id ? /*#__PURE__*/React.createElement("input", {
+    }, editingEx === ex.id ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        gap: 6
+      }
+    }, /*#__PURE__*/React.createElement("input", {
       value: editText,
       onChange: e => setEditText(e.target.value),
-      onBlur: () => saveRename(ex),
       onKeyDown: e => {
-        if (e.key === "Enter") saveRename(ex);
+        if (e.key === "Enter") saveEdit(ex);
         if (e.key === "Escape") setEditingEx(null);
       },
       autoFocus: true,
+      placeholder: "Exercise name",
       style: {
-        flex: 1,
         background: "#131417",
         border: `1.5px solid ${day.color}88`,
         borderRadius: 8,
@@ -1354,7 +1628,47 @@ function LiftLog() {
         padding: "5px 10px",
         outline: "none"
       }
-    }) : /*#__PURE__*/React.createElement("button", {
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 6,
+        alignItems: "center"
+      }
+    }, /*#__PURE__*/React.createElement("input", {
+      value: editTarget,
+      onChange: e => setEditTarget(e.target.value),
+      onKeyDown: e => {
+        if (e.key === "Enter") saveEdit(ex);
+        if (e.key === "Escape") setEditingEx(null);
+      },
+      placeholder: "Reps — e.g. 3 × 8 or 12, 10, 8",
+      style: {
+        flex: 1,
+        minWidth: 0,
+        background: "#131417",
+        border: "1.5px solid #2A2D33",
+        borderRadius: 8,
+        color: "#ECEAE4",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 12.5,
+        padding: "6px 10px",
+        outline: "none"
+      }
+    }), /*#__PURE__*/React.createElement("button", {
+      onClick: () => saveEdit(ex),
+      style: {
+        ...miniBtn,
+        background: day.color,
+        color: dayFg,
+        padding: "7px 14px"
+      }
+    }, "Save"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setEditingEx(null),
+      style: {
+        ...miniBtn,
+        padding: "7px 10px"
+      }
+    }, "Cancel"))) : /*#__PURE__*/React.createElement("button", {
       onClick: () => setExpanded(isOpen ? null : ex.id),
       style: {
         background: "none",
@@ -1785,9 +2099,9 @@ function LiftLog() {
       fontSize: 13.5,
       lineHeight: 1.5
     }
-  }, "Finish a workout on the Today tab and it'll be logged here — date, per-set weights, and sets completed.")) : reversedSessions.map((s, ri) => {
+  }, "Log a set on the Today tab and your workout appears here automatically — date, per-set weights, and sets completed.")) : reversedSessions.map((s, ri) => {
     const idx = sessions.length - 1 - ri;
-    const d = DAY_BY_ID[s.dayId];
+    const d = days.find(x => x.id === s.dayId);
     const light = s.dayId === "cardio";
     const totalSets = s.entries.reduce((a, e) => a + e.setsDone, 0);
     return /*#__PURE__*/React.createElement("div", {
@@ -2013,38 +2327,115 @@ function LiftLog() {
       color: "#C97A6D",
       marginTop: 8
     }
-  }, importMsg))))), view === "today" && /*#__PURE__*/React.createElement("div", {
+  }, importMsg))))), pendingDeleteDay && /*#__PURE__*/React.createElement("div", {
+    onClick: () => setPendingDeleteDay(null),
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.65)",
+      zIndex: 60,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: "#1C1E22",
+      borderRadius: 18,
+      padding: "20px 18px",
+      maxWidth: 340,
+      width: "100%",
+      border: "1px solid #2A2D33"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Archivo', sans-serif",
+      fontWeight: 700,
+      fontSize: 16,
+      marginBottom: 8
+    }
+  }, "Delete ", pendingDeleteDay.label, "?"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#8B8E94",
+      lineHeight: 1.55,
+      marginBottom: 18
+    }
+  }, "Are you sure you want to delete this day? Its logged workouts stay in History, but the day and its exercise list will be removed from your plan."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: confirmDeleteDay,
+    style: {
+      flex: 1,
+      background: "#C0392B",
+      color: "#FBFAF7",
+      border: "none",
+      borderRadius: 12,
+      padding: "12px 0",
+      fontFamily: "'Archivo', sans-serif",
+      fontWeight: 700,
+      fontSize: 13,
+      textTransform: "uppercase",
+      letterSpacing: "0.4px",
+      cursor: "pointer"
+    }
+  }, "Delete day"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPendingDeleteDay(null),
+    style: {
+      flex: 1,
+      background: "#26292E",
+      color: "#B8BAC0",
+      border: "none",
+      borderRadius: 12,
+      padding: "12px 0",
+      fontFamily: "'Archivo', sans-serif",
+      fontWeight: 700,
+      fontSize: 13,
+      textTransform: "uppercase",
+      letterSpacing: "0.4px",
+      cursor: "pointer"
+    }
+  }, "Cancel")))), view === "today" && /*#__PURE__*/React.createElement("div", {
     style: {
       position: "fixed",
       bottom: 0,
       left: 0,
       right: 0,
       background: "linear-gradient(to top, #131417 65%, transparent)",
-      padding: "24px 16px 20px"
+      padding: "24px 16px 18px",
+      pointerEvents: "none"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       maxWidth: 480,
       margin: "0 auto"
     }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: finishDay,
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
-      width: "100%",
-      border: "none",
-      borderRadius: 16,
-      padding: "15px 0",
-      cursor: "pointer",
-      background: flash ? "#3D8A4E" : day.color,
-      color: flash ? "#FBFAF7" : dayFg,
-      fontFamily: "'Archivo', sans-serif",
+      borderRadius: 14,
+      padding: "12px 0",
+      textAlign: "center",
+      background: "#1C1E22",
+      border: `1px solid ${day.color}55`,
+      fontFamily: "'JetBrains Mono', monospace",
       fontWeight: 700,
-      fontSize: 15,
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      boxShadow: `0 6px 20px ${day.color}55`
+      fontSize: 12.5,
+      color: "#B8BAC0",
+      letterSpacing: "0.3px"
     }
-  }, flash ? "Saved ✓ — added to History" : `Finish ${day.label} · ${doneCount}/${dayExercises.length} done`))));
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: day.color === "#E8E6DF" ? "#B8BAC0" : day.color
+    }
+  }, "✓ auto-saving"), ` · ${doneCount}/${dayExercises.length} exercises done`, lastSaved ? ` · saved ${lastSaved.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit"
+  })}` : ""))));
 }
 const btnStyle = {
   width: 38,
