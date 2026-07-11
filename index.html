@@ -664,7 +664,9 @@ function fmtDateLong(iso) {
   });
 }
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  // Local calendar date — not UTC, which flips to "tomorrow" at 5 PM Pacific
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 function fmtWs(ws) {
   const nums = (ws || []).map(w => w > 0 ? w : "·");
