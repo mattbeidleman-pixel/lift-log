@@ -713,6 +713,7 @@ function LiftLog() {
   const [addName, setAddName] = useState("");
   const [addSets, setAddSets] = useState(3);
   const [addTarget, setAddTarget] = useState("");
+  const [addUnit, setAddUnit] = useState("lb");
   const [lastSaved, setLastSaved] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -1101,8 +1102,8 @@ function LiftLog() {
       name,
       target: addTarget.trim() || `${sets} sets`,
       sets,
-      unit: "lb",
-      step: 5
+      unit: addUnit,
+      step: addUnit === "mi" ? 0.25 : 5
     };
     const nextCustom = {
       ...dataRef.current.custom,
@@ -1116,6 +1117,7 @@ function LiftLog() {
     setAddName("");
     setAddTarget("");
     setAddSets(3);
+    setAddUnit("lb");
     setAddOpen(false);
     try {
       persist();
@@ -2057,6 +2059,29 @@ function LiftLog() {
       fontSize: 16
     }
   }, "+"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#8B8E94",
+      marginRight: 4
+    }
+  }, "Unit:"), ["lb", "sec", "mi"].map(u => /*#__PURE__*/React.createElement("button", {
+    key: u,
+    onClick: () => setAddUnit(u),
+    style: {
+      ...miniBtn,
+      fontFamily: "'JetBrains Mono', monospace",
+      padding: "6px 14px",
+      background: addUnit === u ? day.color : "#26292E",
+      color: addUnit === u ? dayFg : "#B8BAC0"
+    }
+  }, u))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
