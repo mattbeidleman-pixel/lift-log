@@ -6,7 +6,9 @@
 <meta name="theme-color" content="#131417" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Lift Log" />
 <title>Lift Log</title>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23131417'/><rect x='15' y='42' width='14' height='16' rx='3' fill='%23D64545'/><rect x='71' y='42' width='14' height='16' rx='3' fill='%23D64545'/><rect x='29' y='47' width='42' height='6' rx='3' fill='%23ECEAE4'/></svg>" />
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
@@ -702,6 +704,14 @@ function LiftLog() {
   const [removedDays, setRemovedDays] = useState([]); // deleted built-in day ids
   const [pendingDeleteDay, setPendingDeleteDay] = useState(null); // day awaiting confirmation
   const [notice, setNotice] = useState("");
+  const [calMonth, setCalMonth] = useState(() => {
+    const n = new Date();
+    return {
+      y: n.getFullYear(),
+      m: n.getMonth()
+    };
+  });
+  const [weeklyGoal, setWeeklyGoal] = useState(5);
   const [editingDay, setEditingDay] = useState(false);
   const [editDayName, setEditDayName] = useState("");
   const [editDaySub, setEditDaySub] = useState("");
@@ -731,7 +741,8 @@ function LiftLog() {
     targets: {},
     dayEdits: {},
     customDays: [],
-    removedDays: []
+    removedDays: [],
+    weeklyGoal: 5
   });
   const noteTimer = useRef(null);
   const autoTimer = useRef(null);
@@ -750,6 +761,7 @@ function LiftLog() {
     let savedDayEdits = {};
     let savedCustomDays = [];
     let savedRemovedDays = [];
+    let savedGoal = 5;
     try {
       const raw = store.get(STORAGE_KEY);
       if (raw) {
@@ -765,6 +777,7 @@ function LiftLog() {
         savedDayEdits = parsed.dayEdits || {};
         savedCustomDays = parsed.customDays || [];
         savedRemovedDays = parsed.removedDays || [];
+        savedGoal = parsed.weeklyGoal || 5;
       }
     } catch (e) {
       // corrupt or missing — start fresh
@@ -801,7 +814,8 @@ function LiftLog() {
       targets: savedTargets,
       dayEdits: savedDayEdits,
       customDays: savedCustomDays,
-      removedDays: savedRemovedDays
+      removedDays: savedRemovedDays,
+      weeklyGoal: savedGoal
     };
     setRecords(normRecs);
     setSessions(normSess);
@@ -814,6 +828,7 @@ function LiftLog() {
     setDayEdits(savedDayEdits);
     setCustomDays(savedCustomDays);
     setRemovedDays(savedRemovedDays);
+    setWeeklyGoal(savedGoal);
     const initLoads = {};
     [...ALL_EX, ...allCustom].forEach(ex => {
       const hist = normRecs[ex.id];
@@ -986,6 +1001,68 @@ function LiftLog() {
     try {
       persist();
     } catch (e) {}
+  };
+
+  // ——— Weekly goal & badges ———
+  const weekKeyOf = dateStr => {
+    const d = new Date(dateStr + "T12:00:00");
+    d.setDate(d.getDate() - d.getDay()); // back to Sunday
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const weekCounts = {};
+  {
+    const seen = new Set();
+    sessions.forEach(s => {
+      if (!seen.has(s.d)) {
+        seen.add(s.d);
+        const wk = weekKeyOf(s.d);
+        weekCounts[wk] = (weekCounts[wk] || 0) + 1;
+      }
+    });
+  }
+  const thisWeekKey = weekKeyOf(todayISO());
+  const thisWeekCount = weekCounts[thisWeekKey] || 0;
+  const goalHitThisWeek = thisWeekCount >= weeklyGoal;
+  const totalBadges = Object.values(weekCounts).filter(c => c >= weeklyGoal).length;
+  let weekStreak = 0;
+  {
+    const shiftWk = (wk, daysBack) => {
+      const d = new Date(wk + "T12:00:00");
+      d.setDate(d.getDate() - daysBack);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    let cursor = goalHitThisWeek ? thisWeekKey : shiftWk(thisWeekKey, 7);
+    while ((weekCounts[cursor] || 0) >= weeklyGoal) {
+      weekStreak++;
+      cursor = shiftWk(cursor, 7);
+    }
+  }
+  const changeGoal = delta => {
+    setWeeklyGoal(g => Math.min(7, Math.max(1, g + delta)));
+  };
+
+  // Keep the stored goal in sync and persisted whenever it changes
+  useEffect(() => {
+    if (!loaded) return;
+    dataRef.current = {
+      ...dataRef.current,
+      weeklyGoal
+    };
+    try {
+      persist();
+    } catch (e) {}
+  }, [weeklyGoal]);
+  const shiftMonth = delta => {
+    setCalMonth(({
+      y,
+      m
+    }) => {
+      const d = new Date(y, m + delta, 1);
+      return {
+        y: d.getFullYear(),
+        m: d.getMonth()
+      };
+    });
   };
   const showNotice = msg => {
     setNotice(msg);
@@ -1170,7 +1247,8 @@ function LiftLog() {
         targets: parsed.targets || {},
         dayEdits: parsed.dayEdits || {},
         customDays: parsed.customDays || [],
-        removedDays: parsed.removedDays || []
+        removedDays: parsed.removedDays || [],
+        weeklyGoal: parsed.weeklyGoal || 5
       };
       dataRef.current = next;
       setRecords(next.records);
@@ -1184,6 +1262,7 @@ function LiftLog() {
       setDayEdits(next.dayEdits);
       setCustomDays(next.customDays);
       setRemovedDays(next.removedDays);
+      setWeeklyGoal(next.weeklyGoal);
       const initLoads = {};
       const allEx = [...ALL_EX, ...Object.values(next.custom).flat()];
       allEx.forEach(ex => {
@@ -1411,6 +1490,9 @@ function LiftLog() {
   }, {
     id: "history",
     label: `History${sessions.length ? ` · ${sessions.length}` : ""}`
+  }, {
+    id: "calendar",
+    label: "Calendar"
   }].map(v => /*#__PURE__*/React.createElement("button", {
     key: v.id,
     onClick: () => {
@@ -2380,7 +2462,232 @@ function LiftLog() {
       color: "#C97A6D",
       marginTop: 8
     }
-  }, importMsg))))), pendingDeleteDay && /*#__PURE__*/React.createElement("div", {
+  }, importMsg)))), view === "calendar" && (() => {
+    const {
+      y,
+      m
+    } = calMonth;
+    const first = new Date(y, m, 1);
+    const startDow = first.getDay();
+    const dim = new Date(y, m + 1, 0).getDate();
+    const monthKey = `${y}-${String(m + 1).padStart(2, "0")}`;
+    const byDate = {};
+    sessions.forEach(s => {
+      if (s.d.startsWith(monthKey)) (byDate[s.d] = byDate[s.d] || []).push(s.dayId);
+    });
+    const workedDays = Object.keys(byDate).length;
+    const todayStr = todayISO();
+    const monthName = first.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric"
+    });
+    const cells = [];
+    for (let i = 0; i < startDow; i++) cells.push(null);
+    for (let d = 1; d <= dim; d++) cells.push(d);
+    const colorFor = dayId => (days.find(x => x.id === dayId) || {}).color || "#8B8E94";
+    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 6
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => shiftMonth(-1),
+      "aria-label": "Previous month",
+      style: {
+        ...miniBtn,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 15,
+        padding: "6px 14px"
+      }
+    }, "‹"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: "'Archivo', sans-serif",
+        fontWeight: 700,
+        fontSize: 16,
+        textTransform: "uppercase",
+        letterSpacing: "0.4px"
+      }
+    }, monthName), /*#__PURE__*/React.createElement("button", {
+      onClick: () => shiftMonth(1),
+      "aria-label": "Next month",
+      style: {
+        ...miniBtn,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 15,
+        padding: "6px 14px"
+      }
+    }, "›")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 12.5,
+        color: "#8B8E94",
+        marginBottom: 14
+      }
+    }, "Worked out ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "#6FBF7E",
+        fontWeight: 700
+      }
+    }, workedDays), " of ", dim, " days"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: "#1C1E22",
+        borderRadius: 16,
+        padding: "14px 16px",
+        marginBottom: 16
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: "'Archivo', sans-serif",
+        fontWeight: 700,
+        fontSize: 12,
+        textTransform: "uppercase",
+        letterSpacing: "0.5px",
+        color: "#8B8E94"
+      }
+    }, "Weekly goal"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => changeGoal(-1),
+      style: {
+        ...miniBtn,
+        fontFamily: "'JetBrains Mono', monospace",
+        padding: "3px 10px"
+      }
+    }, "−"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 13,
+        fontWeight: 700,
+        minWidth: 74,
+        textAlign: "center"
+      }
+    }, weeklyGoal, "× / week"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => changeGoal(1),
+      style: {
+        ...miniBtn,
+        fontFamily: "'JetBrains Mono', monospace",
+        padding: "3px 10px"
+      }
+    }, "＋"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: "#131417",
+        borderRadius: 8,
+        height: 10,
+        overflow: "hidden",
+        marginBottom: 8
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: `${Math.min(100, thisWeekCount / weeklyGoal * 100)}%`,
+        height: "100%",
+        background: goalHitThisWeek ? "#E0B33C" : "#3D8A4E",
+        transition: "width 0.3s ease"
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 12,
+        color: goalHitThisWeek ? "#E0B33C" : "#8B8E94",
+        marginBottom: 10
+      }
+    }, goalHitThisWeek ? `🏅 Goal hit — badge earned! ${thisWeekCount}/${weeklyGoal} this week` : `This week: ${thisWeekCount}/${weeklyGoal} workouts`), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 16,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 12,
+        color: "#B8BAC0"
+      }
+    }, /*#__PURE__*/React.createElement("span", null, "🏅 ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 700
+      }
+    }, totalBadges), " badge", totalBadges === 1 ? "" : "s"), /*#__PURE__*/React.createElement("span", null, "🔥 ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 700
+      }
+    }, weekStreak), "-week streak"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "repeat(7, 1fr)",
+        gap: 4
+      }
+    }, ["S", "M", "T", "W", "T", "F", "S"].map((w, i) => /*#__PURE__*/React.createElement("div", {
+      key: "h" + i,
+      style: {
+        textAlign: "center",
+        fontSize: 10,
+        color: "#5C6067",
+        fontFamily: "'JetBrains Mono', monospace",
+        padding: "4px 0",
+        fontWeight: 700
+      }
+    }, w)), cells.map((d, i) => {
+      if (d === null) return /*#__PURE__*/React.createElement("div", {
+        key: "b" + i
+      });
+      const ds = `${monthKey}-${String(d).padStart(2, "0")}`;
+      const worked = byDate[ds];
+      const isToday = ds === todayStr;
+      const mainColor = worked ? colorFor(worked[0]) : null;
+      return /*#__PURE__*/React.createElement("div", {
+        key: ds,
+        style: {
+          minHeight: 44,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 10,
+          padding: "4px 0",
+          background: worked ? mainColor + "2E" : "transparent",
+          border: isToday ? "1.5px solid #ECEAE4" : `1px solid ${worked ? mainColor + "66" : "#1D1F23"}`
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 12,
+          fontWeight: worked ? 700 : 500,
+          color: worked ? "#ECEAE4" : "#5C6067"
+        }
+      }, d), worked && /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          gap: 2,
+          marginTop: 3
+        }
+      }, worked.slice(0, 3).map((id, j) => /*#__PURE__*/React.createElement("div", {
+        key: j,
+        style: {
+          width: 5,
+          height: 5,
+          borderRadius: "50%",
+          background: colorFor(id)
+        }
+      }))));
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 14,
+        fontSize: 12,
+        color: "#5C6067",
+        lineHeight: 1.5
+      }
+    }, "Colored days are logged workouts — dots show which training days you did. Use ‹ › to look back through past months."));
+  })()), pendingDeleteDay && /*#__PURE__*/React.createElement("div", {
     onClick: () => setPendingDeleteDay(null),
     style: {
       position: "fixed",
@@ -2488,7 +2795,7 @@ function LiftLog() {
   }, "✓ auto-saving"), ` · ${doneCount}/${dayExercises.length} exercises done`, lastSaved ? ` · saved ${lastSaved.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit"
-  })}` : ""))));
+  })}` : "", goalHitThisWeek ? " · 🏅" : ""))));
 }
 const btnStyle = {
   width: 38,
