@@ -677,6 +677,25 @@ function fmtWs(ws) {
 function maxW(ws) {
   return Math.max(0, ...(ws || []).filter(w => typeof w === "number"));
 }
+function targetReps(ex) {
+  const t = String(ex.target || "");
+  const cross = t.match(/[×x]\s*(\d+)/i);
+  if (cross) return Math.min(99, parseInt(cross[1], 10));
+  const first = t.match(/(\d+)/);
+  return first ? Math.min(99, parseInt(first[1], 10)) : 8;
+}
+function fmtWsRs(ws, rs, unit) {
+  const plain = fmtWs(ws) + (unit === "lb" ? "" : ` ${unit}`);
+  if (unit !== "lb" || !rs || !rs.length) return plain;
+  const pairs = (ws || []).map((w, i) => ({
+    w,
+    r: rs[i]
+  })).filter(p => p.w > 0 && p.r > 0);
+  if (!pairs.length) return plain;
+  const uniform = pairs.every(p => p.r === pairs[0].r);
+  if (uniform) return `${fmtWs(ws)} ×${pairs[0].r}`;
+  return (ws || []).map((w, i) => w > 0 ? `${w}×${rs[i] || "?"}` : "·").join("/");
+}
 function normalizeEntry(e, sets) {
   if (e.ws) return e;
   const w = typeof e.w === "number" ? e.w : 0;
@@ -691,6 +710,7 @@ function LiftLog() {
   const [records, setRecords] = useState({});
   const [sessions, setSessions] = useState([]);
   const [loads, setLoads] = useState({});
+  const [repsLog, setRepsLog] = useState({});
   const [done, setDone] = useState({});
   const [expanded, setExpanded] = useState(null);
   const [notes, setNotes] = useState({});
@@ -838,6 +858,17 @@ function LiftLog() {
       }
     });
     setLoads(initLoads);
+    const initReps = {};
+    [...ALL_EX, ...allCustom].forEach(ex => {
+      const hist = normRecs[ex.id];
+      if (hist && hist.length) {
+        const lastRs = hist[hist.length - 1].rs;
+        if (lastRs && lastRs.length) {
+          initReps[ex.id] = Array(ex.sets).fill(0).map((_, i) => typeof lastRs[i] === "number" ? lastRs[i] : lastRs[lastRs.length - 1] || 0);
+        }
+      }
+    });
+    setRepsLog(initReps);
     // Restore today's completed-set circles so a mid-workout app restart picks up where you left off
     const initDone = {};
     normSess.filter(s => s.d === todayISO()).forEach(s => {
@@ -875,6 +906,25 @@ function LiftLog() {
   const getLoads = ex => {
     const arr = loads[ex.id] || [];
     return Array(ex.sets).fill(0).map((_, i) => typeof arr[i] === "number" ? arr[i] : 0);
+  };
+  function getRepsFrom(state, ex) {
+    const cur = state[ex.id] || [];
+    const def = targetReps(ex);
+    return Array(ex.sets).fill(0).map((_, k) => typeof cur[k] === "number" && cur[k] > 0 ? cur[k] : def);
+  }
+  const getReps = ex => getRepsFrom(repsLog, ex);
+  const setRepsDirect = (ex, i, val) => {
+    const n = parseInt(val, 10);
+    const v = isNaN(n) ? 0 : Math.min(99, Math.max(0, n));
+    setRepsLog(prev => {
+      const arr = getRepsFrom(prev, ex);
+      arr[i] = v;
+      return {
+        ...prev,
+        [ex.id]: arr
+      };
+    });
+    if (v > 0) markSet(ex.id, i, ex.sets, true);
   };
   const toggleSet = (exId, i, total) => {
     setDone(prev => {
@@ -926,6 +976,14 @@ function LiftLog() {
     const w = getLoadsFrom(loads, ex)[i];
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
+      for (let j = i + 1; j < ex.sets; j++) arr[j] = arr[i];
+      return {
+        ...prev,
+        [ex.id]: arr
+      };
+    });
+    setRepsLog(prev => {
+      const arr = getRepsFrom(prev, ex);
       for (let j = i + 1; j < ex.sets; j++) arr[j] = arr[i];
       return {
         ...prev,
@@ -1298,6 +1356,7 @@ function LiftLog() {
     const entries = [];
     dayExercises.forEach(ex => {
       const ws = getLoads(ex);
+      const rs = ex.unit === "lb" ? getReps(ex) : undefined;
       const doneArr = (done[ex.id] || []).slice(0, ex.sets);
       const setsDone = doneArr.filter(Boolean).length;
       if (setsDone > 0) {
@@ -1306,6 +1365,7 @@ function LiftLog() {
         filtered.push({
           d: today,
           ws,
+          rs,
           sd: setsDone
         });
         recs[ex.id] = filtered.slice(-30);
@@ -1314,6 +1374,7 @@ function LiftLog() {
           name: dispName(ex),
           unit: ex.unit,
           ws,
+          rs,
           setsDone,
           sets: ex.sets
         });
@@ -1373,7 +1434,7 @@ function LiftLog() {
     if (autoTimer.current) clearTimeout(autoTimer.current);
     autoTimer.current = setTimeout(autoSaveNow, 600);
     return () => clearTimeout(autoTimer.current);
-  }, [loads, done]);
+  }, [loads, done, repsLog]);
   const deleteSession = idx => {
     const sess = [...dataRef.current.sessions];
     sess.splice(idx, 1);
@@ -1402,6 +1463,22 @@ function LiftLog() {
       if (isComplete(hist[i], ex.sets)) return hist[i];
     }
     return null;
+  };
+  const bestFor = ex => {
+    const hist = records[ex.id] || [];
+    let best = null;
+    hist.forEach(e => {
+      (e.ws || []).forEach((w, i) => {
+        if (typeof w === "number" && w > 0 && (!best || w > best.w)) {
+          best = {
+            w,
+            r: e.rs && e.rs[i] > 0 ? e.rs[i] : null,
+            d: e.d
+          };
+        }
+      });
+    });
+    return best;
   };
   const trend = ex => {
     const hist = (records[ex.id] || []).filter(e => isComplete(e, ex.sets));
@@ -1696,6 +1773,8 @@ function LiftLog() {
     const doneArr = Array(ex.sets).fill(false).map((_, di) => Boolean((done[ex.id] || [])[di]));
     const allDone = doneArr.every(Boolean);
     const exLoads = getLoads(ex);
+    const exReps = getReps(ex);
+    const best = bestFor(ex);
     const hist = records[ex.id] || [];
     const isOpen = expanded === ex.id;
     return /*#__PURE__*/React.createElement("div", {
@@ -1809,12 +1888,19 @@ function LiftLog() {
         marginLeft: 8,
         color: tr === "up" ? "#6FBF7E" : tr === "down" ? "#C97A6D" : "#8B8E94"
       }
-    }, "✓ last ", fmtWs(lastDone.ws), ex.unit === "lb" ? "" : ` ${ex.unit}`, " · ", fmtDate(lastDone.d), tr === "up" ? " ↑" : tr === "down" ? " ↓" : ""), !lastDone && last && /*#__PURE__*/React.createElement("span", {
+    }, "✓ last ", fmtWsRs(lastDone.ws, lastDone.rs, ex.unit), " · ", fmtDate(lastDone.d), tr === "up" ? " ↑" : tr === "down" ? " ↓" : ""), !lastDone && last && /*#__PURE__*/React.createElement("span", {
       style: {
         marginLeft: 8,
         color: "#8B8E94"
       }
-    }, "partial ", fmtWs(last.ws), ex.unit === "lb" ? "" : ` ${ex.unit}`, " · ", fmtDate(last.d)))), editingEx !== ex.id && (confirmRemoveEx === ex.id ? /*#__PURE__*/React.createElement("div", {
+    }, "partial ", fmtWsRs(last.ws, last.rs, ex.unit), " · ", fmtDate(last.d))), best && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 11.5,
+        color: "#E0B33C",
+        marginTop: 2
+      }
+    }, "🏆 best ", best.w, ex.unit === "lb" ? "" : ` ${ex.unit}`, best.r ? `×${best.r}` : "", " · ", fmtDate(best.d))), editingEx !== ex.id && (confirmRemoveEx === ex.id ? /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 6,
@@ -1896,7 +1982,7 @@ function LiftLog() {
       style: {
         position: "relative",
         flex: 1,
-        maxWidth: 120
+        maxWidth: 104
       }
     }, /*#__PURE__*/React.createElement("input", {
       type: "number",
@@ -1931,7 +2017,44 @@ function LiftLog() {
       className: "stepbtn",
       onClick: () => bumpSet(ex, i, ex.step),
       style: btnStyle
-    }, "+"), i < ex.sets - 1 ? /*#__PURE__*/React.createElement("button", {
+    }, "+"), ex.unit === "lb" && /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "relative",
+        flexShrink: 0,
+        width: 56
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        position: "absolute",
+        left: 6,
+        top: "50%",
+        transform: "translateY(-50%)",
+        fontSize: 10.5,
+        color: "#8B8E94",
+        fontFamily: "'JetBrains Mono', monospace"
+      }
+    }, "×"), /*#__PURE__*/React.createElement("input", {
+      type: "number",
+      inputMode: "numeric",
+      value: exReps[i] || "",
+      placeholder: String(targetReps(ex)),
+      "aria-label": `Set ${i + 1} reps`,
+      onChange: e => setRepsDirect(ex, i, e.target.value),
+      style: {
+        width: "100%",
+        boxSizing: "border-box",
+        background: "#131417",
+        border: `1.5px solid ${doneArr[i] ? day.color + "66" : "#2A2D33"}`,
+        borderRadius: 10,
+        color: "#ECEAE4",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 700,
+        fontSize: 15,
+        textAlign: "center",
+        padding: "7px 4px 7px 14px",
+        outline: "none"
+      }
+    })), i < ex.sets - 1 ? /*#__PURE__*/React.createElement("button", {
       onClick: () => copyDown(ex, i),
       "aria-label": "Copy this weight to the sets below",
       title: "Copy to sets below",
@@ -2010,7 +2133,7 @@ function LiftLog() {
       style: {
         fontWeight: 700
       }
-    }, fmtWs(h.ws), ex.unit === "lb" ? "" : ` ${ex.unit}`), !isComplete(h, ex.sets) && /*#__PURE__*/React.createElement("span", {
+    }, fmtWsRs(h.ws, h.rs, ex.unit)), !isComplete(h, ex.sets) && /*#__PURE__*/React.createElement("span", {
       style: {
         color: "#8B8E94",
         fontSize: 11
@@ -2326,7 +2449,7 @@ function LiftLog() {
           fontWeight: 700,
           textAlign: "right"
         }
-      }, maxW(e.ws) > 0 ? `${fmtWs(e.ws)}${unit !== "lb" ? ` ${unit}` : ""}` : "—"), /*#__PURE__*/React.createElement("div", {
+      }, maxW(e.ws) > 0 ? fmtWsRs(e.ws, e.rs, unit) : "—"), /*#__PURE__*/React.createElement("div", {
         style: {
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 11.5,
