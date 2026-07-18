@@ -384,20 +384,24 @@ const PROGRAM = [{
   color: "#D64545",
   exercises: [{
     id: "declinecrunch",
+    cat: "abs",
     name: "Decline cable crunch",
-    target: "3 × 12",
-    sets: 3,
+    target: "4 × 12",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "wcrunch",
+    cat: "abs",
     name: "Weighted crunches",
-    target: "3 × 15",
-    sets: 3,
+    target: "4 × 15",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }, {
     id: "bench",
+    cat: "chest_press",
+    mainstay: true,
     name: "Barbell bench press",
     target: "4 × 6",
     sets: 4,
@@ -405,27 +409,31 @@ const PROGRAM = [{
     step: 5
   }, {
     id: "machinepress",
+    cat: "chest_press",
     name: "Machine chest press",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "arnold",
+    cat: "shoulder_press",
     name: "Arnold press",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "lowfly",
+    cat: "chest_fly",
     name: "Low-to-high cable fly",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }, {
     id: "machlat",
+    cat: "side_delts",
     name: "Machine lateral raise",
     target: "4 × 10",
     sets: 4,
@@ -433,16 +441,18 @@ const PROGRAM = [{
     step: 2.5
   }, {
     id: "cgbench",
+    cat: "triceps",
     name: "Close-grip bench press",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "ohtricep",
+    cat: "triceps",
     name: "Overhead cable tricep ext.",
-    target: "3 × 12, 10, 8",
-    sets: 3,
+    target: "4 × 12, 10, 8, 8",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }]
@@ -453,20 +463,24 @@ const PROGRAM = [{
   color: "#3B6BB5",
   exercises: [{
     id: "deadlift",
+    cat: "hinge",
+    mainstay: true,
     name: "Deadlift",
-    target: "3 × 5",
-    sets: 3,
+    target: "4 × 5",
+    sets: 4,
     unit: "lb",
     step: 10
   }, {
     id: "csrow",
+    cat: "row",
     name: "Chest-supported row",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "ngpulldown",
+    cat: "pulldown",
     name: "Neutral-grip pulldown",
     target: "4 × 8",
     sets: 4,
@@ -474,30 +488,34 @@ const PROGRAM = [{
     step: 5
   }, {
     id: "cablerow1",
+    cat: "row",
     name: "Cable single-arm row",
-    target: "3 × 8 / arm",
-    sets: 3,
+    target: "4 × 8 / arm",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "revpecdeck",
+    cat: "rear_delts",
     name: "Reverse pec deck",
-    target: "3 × 10",
-    sets: 3,
+    target: "4 × 10",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "inclinecurl",
+    cat: "biceps",
     name: "Incline dumbbell curl",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }, {
     id: "ropehammer",
+    cat: "biceps",
     name: "Cable rope hammer curl",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }]
@@ -508,20 +526,24 @@ const PROGRAM = [{
   color: "#E0B33C",
   exercises: [{
     id: "kneeraise",
+    cat: "abs",
     name: "Hanging knee raise w/ twist",
-    target: "3 × 10 / side",
-    sets: 3,
+    target: "4 × 10 / side",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }, {
     id: "wplank",
+    cat: "abs",
     name: "Weighted plank / body saw",
-    target: "3 × 45–60s",
-    sets: 3,
+    target: "4 × 45–60s",
+    sets: 4,
     unit: "sec",
     step: 5
   }, {
     id: "squat",
+    cat: "squat",
+    mainstay: true,
     name: "Back squat",
     target: "4 × 6",
     sets: 4,
@@ -529,34 +551,39 @@ const PROGRAM = [{
     step: 5
   }, {
     id: "sldl",
+    cat: "hinge",
     name: "Stiff-leg DB deadlift",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "lunges",
+    cat: "quads_compound",
     name: "Walking lunges",
-    target: "3 × 8 / leg",
-    sets: 3,
+    target: "4 × 8 / leg",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "lyingcurl",
+    cat: "leg_curl",
     name: "Lying leg curl",
-    target: "3 × 12, 10, 8",
-    sets: 3,
+    target: "4 × 12, 10, 8, 8",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "sissy",
+    cat: "quads_iso",
     name: "Sissy squat / rev. Nordic",
-    target: "3 × 8–10",
-    sets: 3,
+    target: "4 × 8–10",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }, {
     id: "slcalf",
+    cat: "calves",
     name: "Single-leg calf raise",
     target: "4 × 10 / leg",
     sets: 4,
@@ -570,51 +597,58 @@ const PROGRAM = [{
   color: "#3D8A4E",
   exercises: [{
     id: "inclinebench",
+    cat: "chest_press",
     name: "Incline barbell bench",
-    target: "3 × 7",
-    sets: 3,
+    target: "4 × 7",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "chinups",
+    cat: "pulldown",
     name: "Weighted chin-ups",
-    target: "3 × 7",
-    sets: 3,
+    target: "4 × 7",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }, {
     id: "meadows",
+    cat: "row",
     name: "Meadows / Kroc row",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "pecdeck",
+    cat: "chest_fly",
     name: "Pec deck / hi-to-low fly",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 5
   }, {
     id: "leanlat",
+    cat: "side_delts",
     name: "Lean-away lateral raise",
-    target: "3 × 12",
-    sets: 3,
+    target: "4 × 12",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }, {
     id: "jmpress",
+    cat: "triceps",
     name: "JM press / skullcrushers",
-    target: "3 × 10, 8, 8",
-    sets: 3,
+    target: "4 × 10, 8, 8, 8",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }, {
     id: "bayesian",
+    cat: "biceps",
     name: "Bayesian cable curl",
-    target: "3 × 8",
-    sets: 3,
+    target: "4 × 8",
+    sets: 4,
     unit: "lb",
     step: 2.5
   }]
@@ -625,6 +659,7 @@ const PROGRAM = [{
   color: "#E8E6DF",
   exercises: [{
     id: "cardio",
+    cat: "cardio",
     name: "Run or swim",
     target: "3–5 mi",
     sets: 1,
@@ -632,16 +667,18 @@ const PROGRAM = [{
     step: 0.25
   }, {
     id: "sideplank",
+    cat: "abs",
     name: "Side plank",
-    target: "3 × 30–45s / side",
-    sets: 3,
+    target: "4 × 30–45s / side",
+    sets: 4,
     unit: "sec",
     step: 5
   }, {
     id: "revcrunch",
+    cat: "abs",
     name: "Reverse crunch",
-    target: "3 × 12–15",
-    sets: 3,
+    target: "4 × 12–15",
+    sets: 4,
     unit: "reps",
     step: 1
   }]
@@ -650,6 +687,431 @@ const STORAGE_KEY = "lift_log_v1";
 const ALL_EX = PROGRAM.flatMap(d => d.exercises);
 const EX_BY_ID = Object.fromEntries(ALL_EX.map(e => [e.id, e]));
 const DAY_BY_ID = Object.fromEntries(PROGRAM.map(d => [d.id, d]));
+
+// ————— Exercise library: same-muscle alternatives for rotation & swaps —————
+const LIB_EXTRA = [{
+  id: "lib_dbbench",
+  cat: "chest_press",
+  name: "DB bench press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_inclinedb",
+  cat: "chest_press",
+  name: "Incline DB press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_dips",
+  cat: "chest_press",
+  name: "Weighted dips",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_smithincline",
+  cat: "chest_press",
+  name: "Smith incline press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_cablefly",
+  cat: "chest_fly",
+  name: "Cable crossover fly",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_dbfly",
+  cat: "chest_fly",
+  name: "Flat DB fly",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_deficitpushup",
+  cat: "chest_fly",
+  name: "Deficit push-up",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_ohp",
+  cat: "shoulder_press",
+  name: "Standing barbell OHP",
+  target: "4 × 6",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_dbshoulder",
+  cat: "shoulder_press",
+  name: "Seated DB shoulder press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_machshoulder",
+  cat: "shoulder_press",
+  name: "Machine shoulder press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_dblat",
+  cat: "side_delts",
+  name: "DB lateral raise",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_cablelat",
+  cat: "side_delts",
+  name: "Cable lateral raise",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_uprow",
+  cat: "side_delts",
+  name: "Wide-grip upright row",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_pushdown",
+  cat: "triceps",
+  name: "Cable pushdown",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_dbskull",
+  cat: "triceps",
+  name: "DB skullcrusher",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_kickback",
+  cat: "triceps",
+  name: "Cable kickback",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_bbrow",
+  cat: "row",
+  name: "Barbell row",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_tbar",
+  cat: "row",
+  name: "T-bar row",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_sealrow",
+  cat: "row",
+  name: "Seal row",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_machrow",
+  cat: "row",
+  name: "Machine row",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_latpulldown",
+  cat: "pulldown",
+  name: "Wide-grip lat pulldown",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_pullup",
+  cat: "pulldown",
+  name: "Pull-ups",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_straightarm",
+  cat: "pulldown",
+  name: "Straight-arm pulldown",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_facepull",
+  cat: "rear_delts",
+  name: "Cable face pull",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_revfly",
+  cat: "rear_delts",
+  name: "Bent-over reverse DB fly",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_bbcurl",
+  cat: "biceps",
+  name: "Barbell curl",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_preacher",
+  cat: "biceps",
+  name: "Preacher curl",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_spider",
+  cat: "biceps",
+  name: "Spider curl",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_rdl",
+  cat: "hinge",
+  name: "Barbell RDL",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 10
+}, {
+  id: "lib_goodmorning",
+  cat: "hinge",
+  name: "Good morning",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_hipthrust",
+  cat: "hinge",
+  name: "Barbell hip thrust",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 10
+}, {
+  id: "lib_backext",
+  cat: "hinge",
+  name: "Weighted back extension",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_seatedcurl",
+  cat: "leg_curl",
+  name: "Seated leg curl",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_nordic",
+  cat: "leg_curl",
+  name: "Nordic curl",
+  target: "4 × 6",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_bulgarian",
+  cat: "quads_compound",
+  name: "Bulgarian split squat",
+  target: "4 × 8 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_legpress",
+  cat: "quads_compound",
+  name: "Leg press",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 10
+}, {
+  id: "lib_hacksquat",
+  cat: "quads_compound",
+  name: "Hack squat",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 10
+}, {
+  id: "lib_stepup",
+  cat: "quads_compound",
+  name: "DB step-up",
+  target: "4 × 10 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_legext",
+  cat: "quads_iso",
+  name: "Leg extension",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_cyclist",
+  cat: "quads_iso",
+  name: "Heel-elevated cyclist squat",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_standingcalf",
+  cat: "calves",
+  name: "Standing calf raise",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_seatedcalf",
+  cat: "calves",
+  name: "Seated calf raise",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_presscalf",
+  cat: "calves",
+  name: "Leg-press calf press",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 10
+}, {
+  id: "lib_cablecrunch",
+  cat: "abs",
+  name: "Kneeling cable crunch",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_abwheel",
+  cat: "abs",
+  name: "Ab wheel rollout",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_legraise",
+  cat: "abs",
+  name: "Hanging leg raise",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_russiantwist",
+  cat: "abs",
+  name: "Weighted Russian twist",
+  target: "4 × 12 / side",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_pallof",
+  cat: "abs",
+  name: "Pallof press",
+  target: "4 × 12 / side",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_bike",
+  cat: "cardio",
+  name: "Bike ride",
+  target: "6–10 mi",
+  sets: 1,
+  unit: "mi",
+  step: 0.5
+}, {
+  id: "lib_rowerg",
+  cat: "cardio",
+  name: "Row erg",
+  target: "2–4 mi",
+  sets: 1,
+  unit: "mi",
+  step: 0.25
+}];
+const LIBRARY = [...ALL_EX.filter(e => e.cat), ...LIB_EXTRA];
+const LIB_MAP = Object.fromEntries(LIBRARY.map(e => [e.id, e]));
+const CAT_ORDER = ["chest_press", "chest_fly", "shoulder_press", "side_delts", "triceps", "row", "pulldown", "rear_delts", "biceps", "squat", "quads_compound", "quads_iso", "hinge", "leg_curl", "calves", "abs", "cardio"];
+const CAT_LABELS = {
+  chest_press: "Chest press",
+  chest_fly: "Chest fly",
+  shoulder_press: "Shoulder press",
+  side_delts: "Side delts",
+  triceps: "Triceps",
+  row: "Rows",
+  pulldown: "Vertical pull",
+  rear_delts: "Rear delts",
+  biceps: "Biceps",
+  squat: "Squat",
+  quads_compound: "Quads — compound",
+  quads_iso: "Quads — isolation",
+  hinge: "Hip hinge",
+  leg_curl: "Leg curl",
+  calves: "Calves",
+  abs: "Abs",
+  cardio: "Cardio"
+};
 function fmtDate(iso) {
   const d = new Date(iso + "T12:00:00");
   return d.toLocaleDateString("en-US", {
@@ -731,6 +1193,12 @@ function LiftLog() {
       m: n.getMonth()
     };
   });
+  const [selDate, setSelDate] = useState(null);
+  const [swaps, setSwaps] = useState({});
+  const [rotationStart, setRotationStart] = useState(null);
+  const [swapOpen, setSwapOpen] = useState(null);
+  const [confirmRotate, setConfirmRotate] = useState(false);
+  const [libAdd, setLibAdd] = useState(null);
   const [weeklyGoal, setWeeklyGoal] = useState(5);
   const [editingDay, setEditingDay] = useState(false);
   const [editDayName, setEditDayName] = useState("");
@@ -741,7 +1209,7 @@ function LiftLog() {
   const [confirmRemoveEx, setConfirmRemoveEx] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addName, setAddName] = useState("");
-  const [addSets, setAddSets] = useState(3);
+  const [addSets, setAddSets] = useState(4);
   const [addTarget, setAddTarget] = useState("");
   const [addUnit, setAddUnit] = useState("lb");
   const [lastSaved, setLastSaved] = useState(null);
@@ -762,7 +1230,9 @@ function LiftLog() {
     dayEdits: {},
     customDays: [],
     removedDays: [],
-    weeklyGoal: 5
+    weeklyGoal: 5,
+    swaps: {},
+    rotationStart: null
   });
   const noteTimer = useRef(null);
   const autoTimer = useRef(null);
@@ -782,6 +1252,8 @@ function LiftLog() {
     let savedCustomDays = [];
     let savedRemovedDays = [];
     let savedGoal = 5;
+    let savedSwaps = {};
+    let savedRotStart = null;
     try {
       const raw = store.get(STORAGE_KEY);
       if (raw) {
@@ -798,17 +1270,19 @@ function LiftLog() {
         savedCustomDays = parsed.customDays || [];
         savedRemovedDays = parsed.removedDays || [];
         savedGoal = parsed.weeklyGoal || 5;
+        savedSwaps = parsed.swaps || {};
+        savedRotStart = parsed.rotationStart || null;
       }
     } catch (e) {
       // corrupt or missing — start fresh
     }
     const allCustom = Object.values(savedCustom).flat();
     const customById = Object.fromEntries(allCustom.map(e => [e.id, e]));
-    const lookup = id => EX_BY_ID[id] || customById[id];
+    const lookup = id => EX_BY_ID[id] || LIB_MAP[id] || customById[id];
     const normRecs = {};
     Object.keys(recs).forEach(exId => {
       const ex = lookup(exId);
-      const sets = ex ? ex.sets : 3;
+      const sets = ex ? ex.sets : 4;
       normRecs[exId] = recs[exId].map(e => normalizeEntry(e, sets));
     });
     const normSess = sess.map(s => ({
@@ -816,7 +1290,7 @@ function LiftLog() {
       entries: s.entries.map(e => {
         if (e.ws) return e;
         const ex = lookup(e.exId);
-        const sets = e.sets || (ex ? ex.sets : 3);
+        const sets = e.sets || (ex ? ex.sets : 4);
         return {
           ...e,
           ws: Array(sets).fill(typeof e.w === "number" ? e.w : 0)
@@ -835,7 +1309,9 @@ function LiftLog() {
       dayEdits: savedDayEdits,
       customDays: savedCustomDays,
       removedDays: savedRemovedDays,
-      weeklyGoal: savedGoal
+      weeklyGoal: savedGoal,
+      swaps: savedSwaps,
+      rotationStart: savedRotStart || todayISO()
     };
     setRecords(normRecs);
     setSessions(normSess);
@@ -849,8 +1325,10 @@ function LiftLog() {
     setCustomDays(savedCustomDays);
     setRemovedDays(savedRemovedDays);
     setWeeklyGoal(savedGoal);
+    setSwaps(savedSwaps);
+    setRotationStart(savedRotStart || todayISO());
     const initLoads = {};
-    [...ALL_EX, ...allCustom].forEach(ex => {
+    [...ALL_EX, ...LIB_EXTRA, ...allCustom].forEach(ex => {
       const hist = normRecs[ex.id];
       if (hist && hist.length) {
         const last = hist[hist.length - 1].ws;
@@ -859,7 +1337,7 @@ function LiftLog() {
     });
     setLoads(initLoads);
     const initReps = {};
-    [...ALL_EX, ...allCustom].forEach(ex => {
+    [...ALL_EX, ...LIB_EXTRA, ...allCustom].forEach(ex => {
       const hist = normRecs[ex.id];
       if (hist && hist.length) {
         const lastRs = hist[hist.length - 1].rs;
@@ -874,7 +1352,7 @@ function LiftLog() {
     normSess.filter(s => s.d === todayISO()).forEach(s => {
       s.entries.forEach(e => {
         const ex = lookup(e.exId);
-        const sets = e.sets || (ex ? ex.sets : 3);
+        const sets = e.sets || (ex ? ex.sets : 4);
         initDone[e.exId] = Array(sets).fill(false).map((_, i) => i < (e.setsDone || 0));
       });
     });
@@ -898,9 +1376,20 @@ function LiftLog() {
     sets: Math.min(6, Math.max(1, setCounts[ex.id] || ex.sets)),
     target: targets[ex.id] || ex.target
   });
-  const dayExercises = [...day.exercises.filter(ex => !removedSet.has(ex.id)), ...(custom[day.id] || [])].map(withSets);
+  const applySwap = ex => {
+    const subId = swaps[ex.id];
+    if (!subId) return ex;
+    const sub = LIB_MAP[subId];
+    return sub ? {
+      ...sub,
+      slotOf: ex.id
+    } : ex;
+  };
+  const exercisesForDay = d => [...d.exercises.filter(ex => !removedSet.has(ex.id)).map(applySwap), ...(custom[d.id] || []).map(applySwap)].map(withSets);
+  const dayExercises = exercisesForDay(day);
   const exMap = {
     ...EX_BY_ID,
+    ...LIB_MAP,
     ...Object.fromEntries(Object.values(custom).flat().map(e => [e.id, e]))
   };
   const getLoads = ex => {
@@ -1110,7 +1599,74 @@ function LiftLog() {
       persist();
     } catch (e) {}
   }, [weeklyGoal]);
+
+  // ——— Swaps & 6-week rotation ———
+  const doSwap = (slotId, libId) => {
+    const next = {
+      ...swaps
+    };
+    if (!libId || libId === slotId) delete next[slotId];else next[slotId] = libId;
+    dataRef.current = {
+      ...dataRef.current,
+      swaps: next
+    };
+    setSwaps(next);
+    setSwapOpen(null);
+    try {
+      persist();
+    } catch (e) {}
+  };
+  const rotateAccessories = () => {
+    const next = {
+      ...swaps
+    };
+    days.forEach(d => {
+      const base = (d.exercises || []).filter(ex => !removedSet.has(ex.id));
+      const usedIds = new Set(base.map(ex => next[ex.id] && LIB_MAP[next[ex.id]] ? next[ex.id] : ex.id));
+      base.forEach(ex => {
+        if (ex.mainstay || !ex.cat || ex.cat === "cardio") return;
+        const currentId = next[ex.id] && LIB_MAP[next[ex.id]] ? next[ex.id] : ex.id;
+        const cands = LIBRARY.filter(l => l.cat === ex.cat && !l.mainstay && l.id !== currentId && !usedIds.has(l.id));
+        if (!cands.length) return;
+        const choice = cands[Math.floor(Math.random() * cands.length)];
+        usedIds.delete(currentId);
+        usedIds.add(choice.id);
+        if (choice.id === ex.id) delete next[ex.id];else next[ex.id] = choice.id;
+      });
+    });
+    const t = todayISO();
+    dataRef.current = {
+      ...dataRef.current,
+      swaps: next,
+      rotationStart: t
+    };
+    setSwaps(next);
+    setRotationStart(t);
+    setConfirmRotate(false);
+    try {
+      persist();
+    } catch (e) {}
+    showNotice("🔀 Switched up! Big lifts and ab days carried over — new block starts today.");
+  };
+  const snoozeRotation = () => {
+    // Treat the block as 4 weeks old so the nudge returns in ~2 weeks
+    const d = new Date();
+    d.setDate(d.getDate() - 28);
+    const t = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    dataRef.current = {
+      ...dataRef.current,
+      rotationStart: t
+    };
+    setRotationStart(t);
+    try {
+      persist();
+    } catch (e) {}
+  };
+  const blockDays = rotationStart ? Math.max(0, Math.floor((Date.now() - new Date(rotationStart + "T12:00:00").getTime()) / 86400000)) : 0;
+  const blockWeeks = Math.floor(blockDays / 7);
+  const rotationDue = loaded && blockDays >= 42;
   const shiftMonth = delta => {
+    setSelDate(null);
     setCalMonth(({
       y,
       m
@@ -1251,7 +1807,7 @@ function LiftLog() {
     setCustom(nextCustom);
     setAddName("");
     setAddTarget("");
-    setAddSets(3);
+    setAddSets(4);
     setAddUnit("lb");
     setAddOpen(false);
     try {
@@ -1259,6 +1815,30 @@ function LiftLog() {
     } catch (e) {
       showNotice("Couldn't save the new exercise — your browser may be blocking storage.");
     }
+  };
+  const addFromLibrary = (libEx, dayId) => {
+    const already = exercisesForDay(days.find(d => d.id === dayId) || day).some(dx => dx.id === libEx.id);
+    if (already) {
+      setLibAdd(null);
+      showNotice(`${libEx.name} is already in that day.`);
+      return;
+    }
+    const nextCustom = {
+      ...dataRef.current.custom,
+      [dayId]: [...(dataRef.current.custom[dayId] || []), {
+        ...libEx
+      }]
+    };
+    dataRef.current = {
+      ...dataRef.current,
+      custom: nextCustom
+    };
+    setCustom(nextCustom);
+    setLibAdd(null);
+    showNotice(`Added ${libEx.name}.`);
+    try {
+      persist();
+    } catch (e) {}
   };
   const removeExercise = exId => {
     const isCustom = (custom[day.id] || []).some(e => e.id === exId);
@@ -1306,7 +1886,9 @@ function LiftLog() {
         dayEdits: parsed.dayEdits || {},
         customDays: parsed.customDays || [],
         removedDays: parsed.removedDays || [],
-        weeklyGoal: parsed.weeklyGoal || 5
+        weeklyGoal: parsed.weeklyGoal || 5,
+        swaps: parsed.swaps || {},
+        rotationStart: parsed.rotationStart || todayISO()
       };
       dataRef.current = next;
       setRecords(next.records);
@@ -1321,6 +1903,8 @@ function LiftLog() {
       setCustomDays(next.customDays);
       setRemovedDays(next.removedDays);
       setWeeklyGoal(next.weeklyGoal);
+      setSwaps(next.swaps);
+      setRotationStart(next.rotationStart);
       const initLoads = {};
       const allEx = [...ALL_EX, ...Object.values(next.custom).flat()];
       allEx.forEach(ex => {
@@ -1455,7 +2039,7 @@ function LiftLog() {
     if (!hist || !hist.length) return null;
     return hist[hist.length - 1];
   };
-  const isComplete = (e, sets) => e.sd === undefined || e.sd >= sets;
+  const isComplete = (e, sets) => e.sd === undefined || e.sd >= Math.min(sets, (e.ws || []).length || sets);
   const lastCompleted = ex => {
     const hist = records[ex.id];
     if (!hist || !hist.length) return null;
@@ -1565,8 +2149,8 @@ function LiftLog() {
     id: "today",
     label: "Today"
   }, {
-    id: "history",
-    label: `History${sessions.length ? ` · ${sessions.length}` : ""}`
+    id: "library",
+    label: "Library"
   }, {
     id: "calendar",
     label: "Calendar"
@@ -1759,7 +2343,46 @@ function LiftLog() {
       color: "#5C6067",
       flexShrink: 0
     }
-  }, "✎")), !loaded ? /*#__PURE__*/React.createElement("div", {
+  }, "✎")), rotationDue && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#2A2417",
+      border: "1px solid #E0B33C55",
+      borderRadius: 14,
+      padding: "12px 14px",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#E8D9A8",
+      lineHeight: 1.5,
+      marginBottom: 8
+    }
+  }, "🔀 This training block is ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 700
+    }
+  }, blockWeeks, " weeks"), " old — time to switch up your accessories? Bench, squat, deadlift, and your ab days stay put."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setView("library"),
+    style: {
+      ...miniBtn,
+      background: "#E0B33C",
+      color: "#17181B",
+      padding: "7px 14px",
+      fontWeight: 700
+    }
+  }, "Switch it up"), /*#__PURE__*/React.createElement("button", {
+    onClick: snoozeRotation,
+    style: {
+      ...miniBtn,
+      padding: "7px 14px"
+    }
+  }, "Remind me in 2 weeks"))), !loaded ? /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       padding: "40px 0",
@@ -1922,7 +2545,19 @@ function LiftLog() {
         gap: 4,
         flexShrink: 0
       }
-    }, /*#__PURE__*/React.createElement("button", {
+    }, ex.cat && /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setSwapOpen(swapOpen === (ex.slotOf || ex.id) ? null : ex.slotOf || ex.id);
+        setConfirmRemoveEx(null);
+      },
+      "aria-label": `Swap ${dispName(ex)} for an alternative`,
+      style: {
+        ...miniBtn,
+        fontSize: 12,
+        padding: "2px 9px",
+        color: "#5C6067"
+      }
+    }, "⇄"), /*#__PURE__*/React.createElement("button", {
       onClick: () => startRename(ex),
       "aria-label": `Rename ${dispName(ex)}`,
       style: {
@@ -1940,7 +2575,75 @@ function LiftLog() {
         padding: "2px 10px",
         color: "#5C6067"
       }
-    }, "×")))), /*#__PURE__*/React.createElement("div", {
+    }, "×")))), swapOpen === (ex.slotOf || ex.id) && (() => {
+      const slotId = ex.slotOf || ex.id;
+      const inDay = new Set(dayExercises.map(dx => dx.id));
+      const cands = LIBRARY.filter(l => l.cat === ex.cat && l.id !== ex.id && !inDay.has(l.id));
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 10,
+          background: "#17181C",
+          borderRadius: 12,
+          padding: 10
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 11,
+          color: "#8B8E94",
+          marginBottom: 8
+        }
+      }, "Swap for another ", (CAT_LABELS[ex.cat] || "").toLowerCase(), " exercise — history & PRs follow each exercise:"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          gap: 6
+        }
+      }, cands.length === 0 && /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 12,
+          color: "#8B8E94"
+        }
+      }, "Everything in this category is already in today's plan."), cands.map(l => /*#__PURE__*/React.createElement("button", {
+        key: l.id,
+        onClick: () => doSwap(slotId, l.id),
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "#22252B",
+          border: "1px solid #2A2D33",
+          borderRadius: 10,
+          padding: "9px 12px",
+          cursor: "pointer",
+          color: "#ECEAE4"
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 13.5,
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif"
+        }
+      }, l.name), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 11,
+          color: "#8B8E94"
+        }
+      }, l.target))), ex.slotOf && /*#__PURE__*/React.createElement("button", {
+        onClick: () => doSwap(slotId, null),
+        style: {
+          background: "none",
+          border: "1px dashed #3A3E45",
+          borderRadius: 10,
+          padding: "8px 12px",
+          cursor: "pointer",
+          color: "#8B8E94",
+          fontSize: 12.5,
+          fontFamily: "'Inter', sans-serif"
+        }
+      }, "↩ Back to ", LIB_MAP[slotId] ? LIB_MAP[slotId].name : "original")));
+    })(), /*#__PURE__*/React.createElement("div", {
       style: {
         marginTop: 12,
         display: "flex",
@@ -2319,160 +3022,12 @@ function LiftLog() {
       padding: "10px 16px",
       borderRadius: 12
     }
-  }, "Cancel"))))), view === "history" && /*#__PURE__*/React.createElement(React.Fragment, null, importMsg && backupMode === null && /*#__PURE__*/React.createElement("div", {
+  }, "Cancel"))))), view === "library" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
-      background: "#1E3325",
-      border: "1px solid #3D8A4E",
-      borderRadius: 12,
-      padding: "10px 14px",
-      marginBottom: 14,
-      fontSize: 13,
-      color: "#8FD9A0"
-    }
-  }, importMsg), !loaded ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      padding: "40px 0",
-      color: "#8B8E94",
-      fontSize: 14
-    }
-  }, "Loading your log…") : sessions.length === 0 ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      padding: "60px 20px",
-      color: "#8B8E94"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'Archivo', sans-serif",
-      fontWeight: 700,
-      fontSize: 16,
-      color: "#B8BAC0",
-      marginBottom: 8,
-      textTransform: "uppercase",
-      letterSpacing: "0.5px"
-    }
-  }, "No workouts yet"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13.5,
-      lineHeight: 1.5
-    }
-  }, "Log a set on the Today tab and your workout appears here automatically — date, per-set weights, and sets completed.")) : reversedSessions.map((s, ri) => {
-    const idx = sessions.length - 1 - ri;
-    const d = days.find(x => x.id === s.dayId);
-    const light = s.dayId === "cardio";
-    const totalSets = s.entries.reduce((a, e) => a + e.setsDone, 0);
-    return /*#__PURE__*/React.createElement("div", {
-      key: `${s.d}-${s.dayId}`,
-      style: {
-        background: "#1C1E22",
-        borderRadius: 16,
-        padding: "14px 16px",
-        marginBottom: 10,
-        borderLeft: `4px solid ${d ? d.color : "#2A2D33"}`
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 10
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontFamily: "'Archivo', sans-serif",
-        fontWeight: 700,
-        fontSize: 11,
-        textTransform: "uppercase",
-        letterSpacing: "0.4px",
-        background: d ? d.color : "#2A2D33",
-        color: light ? "#17181B" : "#FBFAF7",
-        borderRadius: 7,
-        padding: "3px 9px"
-      }
-    }, d ? d.label : s.dayId), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontWeight: 600,
-        fontSize: 14
-      }
-    }, fmtDateLong(s.d))), confirmDelete === idx ? /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 6
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => deleteSession(idx),
-      style: {
-        ...miniBtn,
-        background: "#C0392B",
-        color: "#FBFAF7"
-      }
-    }, "Delete"), /*#__PURE__*/React.createElement("button", {
-      onClick: () => setConfirmDelete(null),
-      style: miniBtn
-    }, "Keep")) : /*#__PURE__*/React.createElement("button", {
-      onClick: () => setConfirmDelete(idx),
-      "aria-label": "Delete session",
-      style: {
-        ...miniBtn,
-        fontSize: 14,
-        padding: "2px 10px"
-      }
-    }, "×")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "1fr auto auto",
-        rowGap: 6,
-        columnGap: 12
-      }
-    }, s.entries.map(e => {
-      const ex = exMap[e.exId];
-      const name = e.name || renames[e.exId] || (ex ? ex.name : e.exId);
-      const unit = e.unit || (ex ? ex.unit : "lb");
-      return /*#__PURE__*/React.createElement(React.Fragment, {
-        key: e.exId
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 13,
-          color: "#C9CBD0"
-        }
-      }, name), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 12.5,
-          fontWeight: 700,
-          textAlign: "right"
-        }
-      }, maxW(e.ws) > 0 ? fmtWsRs(e.ws, e.rs, unit) : "—"), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 11.5,
-          color: e.setsDone >= e.sets ? "#6FBF7E" : "#8B8E94",
-          textAlign: "right",
-          minWidth: 42
-        }
-      }, e.setsDone, "/", e.sets, " sets"));
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginTop: 10,
-        paddingTop: 8,
-        borderTop: "1px solid #2A2D33",
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-        color: "#8B8E94"
-      }
-    }, s.entries.length, " exercises · ", totalSets, " sets completed"));
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 18,
-      paddingTop: 14,
-      borderTop: "1px solid #26292E"
+      background: "#1C1E22",
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -2482,110 +3037,172 @@ function LiftLog() {
       textTransform: "uppercase",
       letterSpacing: "0.5px",
       color: "#8B8E94",
-      marginBottom: 10
-    }
-  }, "Backup"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setBackupMode(backupMode === "export" ? null : "export");
-      setImportMsg("");
-    },
-    style: {
-      ...miniBtn,
-      padding: "8px 14px",
-      borderRadius: 10,
-      background: backupMode === "export" ? "#2C2F35" : "#26292E"
-    }
-  }, "Export data"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setBackupMode(backupMode === "import" ? null : "import");
-      setImportMsg("");
-    },
-    style: {
-      ...miniBtn,
-      padding: "8px 14px",
-      borderRadius: 10,
-      background: backupMode === "import" ? "#2C2F35" : "#26292E"
-    }
-  }, "Import data")), backupMode === "export" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "#8B8E94",
-      marginBottom: 8,
-      lineHeight: 1.5
-    }
-  }, "Tap the box, select all, and copy. Paste it somewhere safe (your Notes app works well). Restore it any time with Import — including on another device."), /*#__PURE__*/React.createElement("textarea", {
-    readOnly: true,
-    value: JSON.stringify(dataRef.current),
-    onFocus: e => e.target.select(),
-    rows: 5,
-    style: {
-      width: "100%",
-      resize: "none",
-      background: "#131417",
-      border: "1px solid #2A2D33",
-      borderRadius: 10,
-      color: "#C9CBD0",
-      fontFamily: "'JetBrains Mono', monospace",
-      fontSize: 10.5,
-      lineHeight: 1.4,
-      padding: "8px 10px",
-      outline: "none"
-    }
-  })), backupMode === "import" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "#8B8E94",
-      marginBottom: 8,
-      lineHeight: 1.5
-    }
-  }, "Paste a previously exported backup below. This replaces what's currently in the app."), /*#__PURE__*/React.createElement("textarea", {
-    value: importText,
-    onChange: e => setImportText(e.target.value),
-    placeholder: "Paste your backup here…",
-    rows: 5,
-    style: {
-      width: "100%",
-      resize: "none",
-      background: "#131417",
-      border: "1px solid #2A2D33",
-      borderRadius: 10,
-      color: "#C9CBD0",
-      fontFamily: "'JetBrains Mono', monospace",
-      fontSize: 10.5,
-      lineHeight: 1.4,
-      padding: "8px 10px",
-      outline: "none",
       marginBottom: 8
     }
-  }), /*#__PURE__*/React.createElement("button", {
-    onClick: doImport,
-    disabled: !importText.trim(),
+  }, "Training block"), /*#__PURE__*/React.createElement("div", {
     style: {
-      border: "none",
-      borderRadius: 10,
-      padding: "9px 18px",
-      cursor: importText.trim() ? "pointer" : "default",
-      background: importText.trim() ? "#3D8A4E" : "#26292E",
-      color: importText.trim() ? "#FBFAF7" : "#5C6067",
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: 13,
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 700,
+      color: rotationDue ? "#E0B33C" : "#ECEAE4"
+    }
+  }, blockWeeks, " week", blockWeeks === 1 ? "" : "s"), " into this block", rotationDue ? " — time to switch it up" : " · rotation suggested at 6"), confirmRotate ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: "#B8BAC0",
+      lineHeight: 1.5,
+      marginBottom: 8
+    }
+  }, "Re-pick your accessory exercises across every day? Bench press, back squat, and deadlift stay locked, ab slots keep their frequency with fresh exercises, and cardio & your own added exercises are untouched."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: rotateAccessories,
+    style: {
+      ...miniBtn,
+      background: "#E0B33C",
+      color: "#17181B",
+      padding: "8px 16px",
+      fontWeight: 700
+    }
+  }, "Switch"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setConfirmRotate(false),
+    style: {
+      ...miniBtn,
+      padding: "8px 14px"
+    }
+  }, "Cancel"))) : /*#__PURE__*/React.createElement("button", {
+    onClick: () => setConfirmRotate(true),
+    style: {
+      ...miniBtn,
+      padding: "9px 16px",
+      fontWeight: 700,
+      fontSize: 13
+    }
+  }, "🔀 Switch it up"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "#5C6067",
+      lineHeight: 1.5,
+      marginTop: 10
+    }
+  }, "Every exercise below can also be swapped one at a time from the Today tab with ⇄. Each exercise keeps its own history and PR wherever it appears.")), CAT_ORDER.map(cat => /*#__PURE__*/React.createElement("div", {
+    key: cat,
+    style: {
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
       fontFamily: "'Archivo', sans-serif",
       fontWeight: 700,
       fontSize: 12,
       textTransform: "uppercase",
-      letterSpacing: "0.4px"
+      letterSpacing: "0.5px",
+      color: "#8B8E94",
+      marginBottom: 6
     }
-  }, "Restore backup"), importMsg && backupMode === "import" && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "#C97A6D",
-      marginTop: 8
-    }
-  }, importMsg)))), view === "calendar" && (() => {
+  }, CAT_LABELS[cat]), LIBRARY.filter(l => l.cat === cat).map(l => {
+    const activeDays = days.filter(d => exercisesForDay(d).some(dx => dx.id === l.id));
+    return /*#__PURE__*/React.createElement("div", {
+      key: l.id,
+      style: {
+        background: "#1C1E22",
+        borderRadius: 12,
+        padding: "10px 12px",
+        marginBottom: 6,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 8
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 13.5,
+        fontWeight: 600
+      }
+    }, renames[l.id] || l.name, l.mainstay && /*#__PURE__*/React.createElement("span", {
+      style: {
+        marginLeft: 6,
+        fontSize: 11
+      },
+      title: "Mainstay — never rotated"
+    }, "🔒")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 10.5,
+        color: "#5C6067",
+        marginTop: 2
+      }
+    }, targets[l.id] || l.target)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+        flexShrink: 0
+      }
+    }, activeDays.map(d => /*#__PURE__*/React.createElement("span", {
+      key: d.id,
+      style: {
+        fontFamily: "'Archivo', sans-serif",
+        fontWeight: 700,
+        fontSize: 9.5,
+        textTransform: "uppercase",
+        letterSpacing: "0.3px",
+        background: d.color,
+        color: d.id === "cardio" ? "#17181B" : "#FBFAF7",
+        borderRadius: 6,
+        padding: "2px 7px"
+      }
+    }, d.label)), activeDays.length === 0 && (libAdd === l.id ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 4,
+        flexWrap: "wrap",
+        justifyContent: "flex-end"
+      }
+    }, days.map(d => /*#__PURE__*/React.createElement("button", {
+      key: d.id,
+      onClick: () => addFromLibrary(l, d.id),
+      style: {
+        fontFamily: "'Archivo', sans-serif",
+        fontWeight: 700,
+        fontSize: 9.5,
+        textTransform: "uppercase",
+        background: "#26292E",
+        color: "#B8BAC0",
+        border: `1px solid ${d.color}66`,
+        borderRadius: 6,
+        padding: "3px 7px",
+        cursor: "pointer"
+      }
+    }, d.label)), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setLibAdd(null),
+      style: {
+        ...miniBtn,
+        fontSize: 10,
+        padding: "3px 7px"
+      }
+    }, "✕")) : /*#__PURE__*/React.createElement("button", {
+      onClick: () => setLibAdd(l.id),
+      "aria-label": `Add ${l.name} to a day`,
+      style: {
+        ...miniBtn,
+        fontSize: 12,
+        padding: "3px 10px",
+        color: "#8B8E94"
+      }
+    }, "＋"))));
+  })))), view === "calendar" && (() => {
     const {
       y,
       m
@@ -2769,6 +3386,12 @@ function LiftLog() {
       const mainColor = worked ? colorFor(worked[0]) : null;
       return /*#__PURE__*/React.createElement("div", {
         key: ds,
+        onClick: () => {
+          setSelDate(selDate === ds ? null : ds);
+          setConfirmDelete(null);
+        },
+        role: "button",
+        "aria-label": `Show workouts on ${ds}`,
         style: {
           minHeight: 44,
           display: "flex",
@@ -2777,8 +3400,9 @@ function LiftLog() {
           justifyContent: "center",
           borderRadius: 10,
           padding: "4px 0",
+          cursor: "pointer",
           background: worked ? mainColor + "2E" : "transparent",
-          border: isToday ? "1.5px solid #ECEAE4" : `1px solid ${worked ? mainColor + "66" : "#1D1F23"}`
+          border: selDate === ds ? "2px solid #ECEAE4" : isToday ? "1.5px solid #ECEAE4" : `1px solid ${worked ? mainColor + "66" : "#1D1F23"}`
         }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
@@ -2802,14 +3426,273 @@ function LiftLog() {
           background: colorFor(id)
         }
       }))));
-    })), /*#__PURE__*/React.createElement("div", {
+    })), selDate && (() => {
+      const daySessions = sessions.map((s, idx) => ({
+        s,
+        idx
+      })).filter(({
+        s
+      }) => s.d === selDate);
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 14
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: "'Archivo', sans-serif",
+          fontWeight: 700,
+          fontSize: 12,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+          color: "#8B8E94",
+          marginBottom: 8
+        }
+      }, fmtDateLong(selDate)), daySessions.length === 0 ? /*#__PURE__*/React.createElement("div", {
+        style: {
+          background: "#1C1E22",
+          borderRadius: 14,
+          padding: "14px 16px",
+          fontSize: 13,
+          color: "#8B8E94"
+        }
+      }, "No workout logged this day.") : daySessions.map(({
+        s,
+        idx
+      }) => {
+        const d = days.find(x => x.id === s.dayId);
+        const light = s.dayId === "cardio";
+        const totalSets = s.entries.reduce((a, e) => a + e.setsDone, 0);
+        return /*#__PURE__*/React.createElement("div", {
+          key: `${s.d}-${s.dayId}`,
+          style: {
+            background: "#1C1E22",
+            borderRadius: 16,
+            padding: "14px 16px",
+            marginBottom: 10,
+            borderLeft: `4px solid ${d ? d.color : "#2A2D33"}`
+          }
+        }, /*#__PURE__*/React.createElement("div", {
+          style: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10
+          }
+        }, /*#__PURE__*/React.createElement("span", {
+          style: {
+            fontFamily: "'Archivo', sans-serif",
+            fontWeight: 700,
+            fontSize: 11,
+            textTransform: "uppercase",
+            letterSpacing: "0.4px",
+            background: d ? d.color : "#2A2D33",
+            color: light ? "#17181B" : "#FBFAF7",
+            borderRadius: 7,
+            padding: "3px 9px"
+          }
+        }, d ? d.label : s.dayId), confirmDelete === idx ? /*#__PURE__*/React.createElement("div", {
+          style: {
+            display: "flex",
+            gap: 6
+          }
+        }, /*#__PURE__*/React.createElement("button", {
+          onClick: () => deleteSession(idx),
+          style: {
+            ...miniBtn,
+            background: "#C0392B",
+            color: "#FBFAF7"
+          }
+        }, "Delete"), /*#__PURE__*/React.createElement("button", {
+          onClick: () => setConfirmDelete(null),
+          style: miniBtn
+        }, "Keep")) : /*#__PURE__*/React.createElement("button", {
+          onClick: () => setConfirmDelete(idx),
+          "aria-label": "Delete session",
+          style: {
+            ...miniBtn,
+            fontSize: 14,
+            padding: "2px 10px"
+          }
+        }, "×")), /*#__PURE__*/React.createElement("div", {
+          style: {
+            display: "grid",
+            gridTemplateColumns: "1fr auto auto",
+            rowGap: 6,
+            columnGap: 12
+          }
+        }, s.entries.map(e => {
+          const ex = exMap[e.exId];
+          const name = e.name || renames[e.exId] || (ex ? ex.name : e.exId);
+          const unit = e.unit || (ex ? ex.unit : "lb");
+          return /*#__PURE__*/React.createElement(React.Fragment, {
+            key: e.exId
+          }, /*#__PURE__*/React.createElement("div", {
+            style: {
+              fontSize: 13,
+              color: "#C9CBD0"
+            }
+          }, name), /*#__PURE__*/React.createElement("div", {
+            style: {
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 12.5,
+              fontWeight: 700,
+              textAlign: "right"
+            }
+          }, maxW(e.ws) > 0 ? fmtWsRs(e.ws, e.rs, unit) : "—"), /*#__PURE__*/React.createElement("div", {
+            style: {
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11.5,
+              color: e.setsDone >= e.sets ? "#6FBF7E" : "#8B8E94",
+              textAlign: "right",
+              minWidth: 42
+            }
+          }, e.setsDone, "/", e.sets, " sets"));
+        })), /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginTop: 10,
+            paddingTop: 8,
+            borderTop: "1px solid #2A2D33",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+            color: "#8B8E94"
+          }
+        }, s.entries.length, " exercises · ", totalSets, " sets completed"));
+      }));
+    })(), /*#__PURE__*/React.createElement("div", {
       style: {
         marginTop: 14,
         fontSize: 12,
         color: "#5C6067",
         lineHeight: 1.5
       }
-    }, "Colored days are logged workouts — dots show which training days you did. Use ‹ › to look back through past months."));
+    }, "Colored days are logged workouts — tap any day to see that workout. Use ‹ › to look back through past months."), importMsg && backupMode === null && /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: "#1E3325",
+        border: "1px solid #3D8A4E",
+        borderRadius: 12,
+        padding: "10px 14px",
+        marginBottom: 14,
+        fontSize: 13,
+        color: "#8FD9A0"
+      }
+    }, importMsg), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 18,
+        paddingTop: 14,
+        borderTop: "1px solid #26292E"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: "'Archivo', sans-serif",
+        fontWeight: 700,
+        fontSize: 12,
+        textTransform: "uppercase",
+        letterSpacing: "0.5px",
+        color: "#8B8E94",
+        marginBottom: 10
+      }
+    }, "Backup"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setBackupMode(backupMode === "export" ? null : "export");
+        setImportMsg("");
+      },
+      style: {
+        ...miniBtn,
+        padding: "8px 14px",
+        borderRadius: 10,
+        background: backupMode === "export" ? "#2C2F35" : "#26292E"
+      }
+    }, "Export data"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setBackupMode(backupMode === "import" ? null : "import");
+        setImportMsg("");
+      },
+      style: {
+        ...miniBtn,
+        padding: "8px 14px",
+        borderRadius: 10,
+        background: backupMode === "import" ? "#2C2F35" : "#26292E"
+      }
+    }, "Import data")), backupMode === "export" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        color: "#8B8E94",
+        marginBottom: 8,
+        lineHeight: 1.5
+      }
+    }, "Tap the box, select all, and copy. Paste it somewhere safe (your Notes app works well). Restore it any time with Import — including on another device."), /*#__PURE__*/React.createElement("textarea", {
+      readOnly: true,
+      value: JSON.stringify(dataRef.current),
+      onFocus: e => e.target.select(),
+      rows: 5,
+      style: {
+        width: "100%",
+        resize: "none",
+        background: "#131417",
+        border: "1px solid #2A2D33",
+        borderRadius: 10,
+        color: "#C9CBD0",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 10.5,
+        lineHeight: 1.4,
+        padding: "8px 10px",
+        outline: "none"
+      }
+    })), backupMode === "import" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        color: "#8B8E94",
+        marginBottom: 8,
+        lineHeight: 1.5
+      }
+    }, "Paste a previously exported backup below. This replaces what's currently in the app."), /*#__PURE__*/React.createElement("textarea", {
+      value: importText,
+      onChange: e => setImportText(e.target.value),
+      placeholder: "Paste your backup here…",
+      rows: 5,
+      style: {
+        width: "100%",
+        resize: "none",
+        background: "#131417",
+        border: "1px solid #2A2D33",
+        borderRadius: 10,
+        color: "#C9CBD0",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 10.5,
+        lineHeight: 1.4,
+        padding: "8px 10px",
+        outline: "none",
+        marginBottom: 8
+      }
+    }), /*#__PURE__*/React.createElement("button", {
+      onClick: doImport,
+      disabled: !importText.trim(),
+      style: {
+        border: "none",
+        borderRadius: 10,
+        padding: "9px 18px",
+        cursor: importText.trim() ? "pointer" : "default",
+        background: importText.trim() ? "#3D8A4E" : "#26292E",
+        color: importText.trim() ? "#FBFAF7" : "#5C6067",
+        fontFamily: "'Archivo', sans-serif",
+        fontWeight: 700,
+        fontSize: 12,
+        textTransform: "uppercase",
+        letterSpacing: "0.4px"
+      }
+    }, "Restore backup"), importMsg && backupMode === "import" && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        color: "#C97A6D",
+        marginTop: 8
+      }
+    }, importMsg))));
   })()), pendingDeleteDay && /*#__PURE__*/React.createElement("div", {
     onClick: () => setPendingDeleteDay(null),
     style: {
