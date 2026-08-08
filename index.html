@@ -1089,24 +1089,675 @@ const LIB_EXTRA = [{
   sets: 1,
   unit: "mi",
   step: 0.25
+}, {
+  id: "lib_machineincline",
+  cat: "chest_press",
+  name: "Incline machine press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_floorpress",
+  cat: "chest_press",
+  name: "DB floor press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_declinebench",
+  cat: "chest_press",
+  name: "Decline barbell press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_pushupweighted",
+  cat: "chest_press",
+  name: "Weighted push-up",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_machinefly",
+  cat: "chest_fly",
+  name: "Machine chest fly",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_inclinedbfly",
+  cat: "chest_fly",
+  name: "Incline DB fly",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_squeezepress",
+  cat: "chest_fly",
+  name: "DB squeeze press",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_pushpress",
+  cat: "shoulder_press",
+  name: "Push press",
+  target: "4 × 5",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_smithohp",
+  cat: "shoulder_press",
+  name: "Smith machine OHP",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_landmine",
+  cat: "shoulder_press",
+  name: "Landmine press",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_zpress",
+  cat: "shoulder_press",
+  name: "Seated Z-press",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_egyptian",
+  cat: "side_delts",
+  name: "Egyptian lateral raise",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_seateddblat",
+  cat: "side_delts",
+  name: "Seated DB lateral raise",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_lat21s",
+  cat: "side_delts",
+  name: "Lateral raise 21s",
+  target: "4 × 21",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_cheatlat",
+  cat: "side_delts",
+  name: "Cheat lateral raise",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_ropepushdown",
+  cat: "triceps",
+  name: "Rope pushdown",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_ezskull",
+  cat: "triceps",
+  name: "EZ-bar skullcrusher",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_singlepushdown",
+  cat: "triceps",
+  name: "Single-arm pushdown",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_benchdip",
+  cat: "triceps",
+  name: "Bench dip",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_diamondpushup",
+  cat: "triceps",
+  name: "Diamond push-up",
+  target: "4 × 15",
+  sets: 4,
+  unit: "reps",
+  step: 1
+}, {
+  id: "lib_pendlay",
+  cat: "row",
+  name: "Pendlay row",
+  target: "4 × 6",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_dbrow",
+  cat: "row",
+  name: "Single-arm DB row",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_invertedrow",
+  cat: "row",
+  name: "Inverted row",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_widecablerow",
+  cat: "row",
+  name: "Wide-grip cable row",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_closepulldown",
+  cat: "pulldown",
+  name: "Close-grip pulldown",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_dbpullover",
+  cat: "pulldown",
+  name: "DB pullover",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_assistedpullup",
+  cat: "pulldown",
+  name: "Assisted pull-up",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_machpulldown",
+  cat: "pulldown",
+  name: "Machine pulldown",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_cablerearfly",
+  cat: "rear_delts",
+  name: "Cable rear delt fly",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_reardeltrow",
+  cat: "rear_delts",
+  name: "Rear delt row",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_pronehraise",
+  cat: "rear_delts",
+  name: "Prone Y-raise",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_bandpullapart",
+  cat: "rear_delts",
+  name: "Band pull-apart",
+  target: "4 × 20",
+  sets: 4,
+  unit: "reps",
+  step: 1
+}, {
+  id: "lib_hammercurl",
+  cat: "biceps",
+  name: "DB hammer curl",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_ezcurl",
+  cat: "biceps",
+  name: "EZ-bar curl",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_concentration",
+  cat: "biceps",
+  name: "Concentration curl",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_cablecurl",
+  cat: "biceps",
+  name: "Cable curl",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_frontsquat",
+  cat: "squat",
+  name: "Front squat",
+  target: "4 × 5",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_pausesquat",
+  cat: "squat",
+  name: "Pause back squat",
+  target: "4 × 5",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_gobletsquat",
+  cat: "squat",
+  name: "Goblet squat",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_safetybar",
+  cat: "squat",
+  name: "Safety-bar squat",
+  target: "4 × 6",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_smithsquat",
+  cat: "squat",
+  name: "Smith machine squat",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_reverselunge",
+  cat: "quads_compound",
+  name: "Reverse lunge",
+  target: "4 × 10 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_beltsquat",
+  cat: "quads_compound",
+  name: "Belt squat",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_pendulum",
+  cat: "quads_compound",
+  name: "Pendulum squat",
+  target: "4 × 10",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_sledpush",
+  cat: "quads_compound",
+  name: "Sled push",
+  target: "4 × 20 yd",
+  sets: 4,
+  unit: "lb",
+  step: 10
+}, {
+  id: "lib_singlelegext",
+  cat: "quads_iso",
+  name: "Single-leg extension",
+  target: "4 × 12 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_stepdown",
+  cat: "quads_iso",
+  name: "Deficit step-down",
+  target: "4 × 10 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_spanishsquat",
+  cat: "quads_iso",
+  name: "Spanish squat",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_trapbar",
+  cat: "hinge",
+  name: "Trap-bar deadlift",
+  target: "4 × 6",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_sumodl",
+  cat: "hinge",
+  name: "Sumo deadlift",
+  target: "4 × 5",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_singlelegrdl",
+  cat: "hinge",
+  name: "Single-leg RDL",
+  target: "4 × 10 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_pullthrough",
+  cat: "hinge",
+  name: "Cable pull-through",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_kbswing",
+  cat: "hinge",
+  name: "Kettlebell swing",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_standingcurl",
+  cat: "leg_curl",
+  name: "Standing leg curl",
+  target: "4 × 12 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_slidercurl",
+  cat: "leg_curl",
+  name: "Slider hamstring curl",
+  target: "4 × 10",
+  sets: 4,
+  unit: "reps",
+  step: 1
+}, {
+  id: "lib_ghr",
+  cat: "leg_curl",
+  name: "Glute-ham raise",
+  target: "4 × 8",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_donkeycalf",
+  cat: "calves",
+  name: "Donkey calf raise",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_tibraise",
+  cat: "calves",
+  name: "Tibialis raise",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_deadbug",
+  cat: "abs",
+  name: "Weighted dead bug",
+  target: "4 × 10 / side",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_hollowhold",
+  cat: "abs",
+  name: "Hollow hold",
+  target: "4 × 30–45s",
+  sets: 4,
+  unit: "sec",
+  step: 5
+}, {
+  id: "lib_dragonflag",
+  cat: "abs",
+  name: "Dragon flag",
+  target: "4 × 6",
+  sets: 4,
+  unit: "reps",
+  step: 1
+}, {
+  id: "lib_vup",
+  cat: "abs",
+  name: "V-up",
+  target: "4 × 15",
+  sets: 4,
+  unit: "reps",
+  step: 1
+}, {
+  id: "lib_woodchop",
+  cat: "abs",
+  name: "Cable woodchop",
+  target: "4 × 12 / side",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_toestobar",
+  cat: "abs",
+  name: "Toes-to-bar",
+  target: "4 × 10",
+  sets: 4,
+  unit: "reps",
+  step: 1
+}, {
+  id: "lib_bbshrug",
+  cat: "traps",
+  name: "Barbell shrug",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_dbshrug",
+  cat: "traps",
+  name: "DB shrug",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_rackpull",
+  cat: "traps",
+  name: "Rack pull",
+  target: "4 × 6",
+  sets: 4,
+  unit: "lb",
+  step: 10
+}, {
+  id: "lib_farmers",
+  cat: "traps",
+  name: "Farmer's carry",
+  target: "4 × 40 yd",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_wristcurl",
+  cat: "forearms",
+  name: "Wrist curl",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_reversecurl",
+  cat: "forearms",
+  name: "Reverse curl",
+  target: "4 × 12",
+  sets: 4,
+  unit: "lb",
+  step: 2.5
+}, {
+  id: "lib_deadhang",
+  cat: "forearms",
+  name: "Dead hang",
+  target: "4 × 45s",
+  sets: 4,
+  unit: "sec",
+  step: 5
+}, {
+  id: "lib_platepinch",
+  cat: "forearms",
+  name: "Plate pinch hold",
+  target: "4 × 30s",
+  sets: 4,
+  unit: "sec",
+  step: 5
+}, {
+  id: "lib_abduction",
+  cat: "glutes",
+  name: "Hip abduction machine",
+  target: "4 × 15",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_cablekickback",
+  cat: "glutes",
+  name: "Cable glute kickback",
+  target: "4 × 12 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_frogpump",
+  cat: "glutes",
+  name: "Frog pump",
+  target: "4 × 20",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_singlelegthrust",
+  cat: "glutes",
+  name: "Single-leg hip thrust",
+  target: "4 × 10 / leg",
+  sets: 4,
+  unit: "lb",
+  step: 5
+}, {
+  id: "lib_inclinewalk",
+  cat: "cardio",
+  name: "Incline treadmill walk",
+  target: "2–3 mi",
+  sets: 1,
+  unit: "mi",
+  step: 0.25
+}, {
+  id: "lib_stairmaster",
+  cat: "cardio",
+  name: "Stairmaster",
+  target: "15–25 min",
+  sets: 1,
+  unit: "sec",
+  step: 60
+}, {
+  id: "lib_jumprope",
+  cat: "cardio",
+  name: "Jump rope",
+  target: "10–15 min",
+  sets: 1,
+  unit: "sec",
+  step: 30
+}, {
+  id: "lib_swim",
+  cat: "cardio",
+  name: "Swim",
+  target: "1–2 mi",
+  sets: 1,
+  unit: "mi",
+  step: 0.25
+}, {
+  id: "lib_elliptical",
+  cat: "cardio",
+  name: "Elliptical",
+  target: "3–5 mi",
+  sets: 1,
+  unit: "mi",
+  step: 0.25
 }];
 const LIBRARY = [...ALL_EX.filter(e => e.cat), ...LIB_EXTRA];
 const LIB_MAP = Object.fromEntries(LIBRARY.map(e => [e.id, e]));
-const CAT_ORDER = ["chest_press", "chest_fly", "shoulder_press", "side_delts", "triceps", "row", "pulldown", "rear_delts", "biceps", "squat", "quads_compound", "quads_iso", "hinge", "leg_curl", "calves", "abs", "cardio"];
+const CAT_ORDER = ["chest_press", "chest_fly", "shoulder_press", "side_delts", "triceps", "traps", "row", "pulldown", "rear_delts", "biceps", "forearms", "squat", "quads_compound", "quads_iso", "hinge", "glutes", "leg_curl", "calves", "abs", "cardio"];
 const CAT_LABELS = {
   chest_press: "Chest press",
   chest_fly: "Chest fly",
   shoulder_press: "Shoulder press",
   side_delts: "Side delts",
   triceps: "Triceps",
+  traps: "Traps",
   row: "Rows",
   pulldown: "Vertical pull",
   rear_delts: "Rear delts",
   biceps: "Biceps",
+  forearms: "Forearms & grip",
   squat: "Squat",
   quads_compound: "Quads — compound",
   quads_iso: "Quads — isolation",
   hinge: "Hip hinge",
+  glutes: "Glutes",
   leg_curl: "Leg curl",
   calves: "Calves",
   abs: "Abs",
@@ -1131,6 +1782,31 @@ function todayISO() {
   // Local calendar date — not UTC, which flips to "tomorrow" at 5 PM Pacific
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+// ————— Which day are you due for? —————
+// Order = the live plan (program days minus removed, plus custom days).
+function dayOrderFrom(removedDays, customDays) {
+  const rm = new Set(removedDays || []);
+  const base = [...PROGRAM.filter(d => !rm.has(d.id)), ...(customDays || [])];
+  return base.length ? base : [PROGRAM[0]];
+}
+function nextDayDue(sessions, removedDays, customDays) {
+  const order = dayOrderFrom(removedDays, customDays);
+  const list = (sessions || []).slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
+  const t = todayISO();
+  // Already logged something today: stay on it so a mid-workout reopen resumes.
+  const todays = list.filter(s => s.d === t);
+  if (todays.length) {
+    const id = todays[todays.length - 1].dayId;
+    if (order.some(d => d.id === id)) return id;
+  }
+  // Otherwise advance one slot past the most recent completed day.
+  const past = list.filter(s => s.d < t);
+  for (let i = past.length - 1; i >= 0; i--) {
+    const idx = order.findIndex(d => d.id === past[i].dayId);
+    if (idx !== -1) return order[(idx + 1) % order.length].id;
+  }
+  return order[0].id;
 }
 function fmtWs(ws) {
   const nums = (ws || []).map(w => w > 0 ? w : "·");
@@ -1173,6 +1849,9 @@ function LiftLog() {
   const [sessions, setSessions] = useState([]);
   const [loads, setLoads] = useState({});
   const [repsLog, setRepsLog] = useState({});
+  // While a number field is focused we hold its raw text here, so the target-reps
+  // fallback and the 0-99 clamp can't repaint the box mid-keystroke.
+  const [draft, setDraft] = useState(null); // { key, val }
   const [done, setDone] = useState({});
   const [expanded, setExpanded] = useState(null);
   const [notes, setNotes] = useState({});
@@ -1199,6 +1878,7 @@ function LiftLog() {
   const [swapOpen, setSwapOpen] = useState(null);
   const [confirmRotate, setConfirmRotate] = useState(false);
   const [libAdd, setLibAdd] = useState(null);
+  const [libQuery, setLibQuery] = useState("");
   const [weeklyGoal, setWeeklyGoal] = useState(5);
   const [editingDay, setEditingDay] = useState(false);
   const [editDayName, setEditDayName] = useState("");
@@ -1207,6 +1887,9 @@ function LiftLog() {
   const [editText, setEditText] = useState("");
   const [editTarget, setEditTarget] = useState("");
   const [confirmRemoveEx, setConfirmRemoveEx] = useState(null);
+  // Library adds live here, keyed by date -> dayId, so they only apply to the
+  // session you're actually working. Pruned to today's key on load/rollover.
+  const [oneOff, setOneOff] = useState({});
   const [addOpen, setAddOpen] = useState(false);
   const [addName, setAddName] = useState("");
   const [addSets, setAddSets] = useState(4);
@@ -1232,7 +1915,8 @@ function LiftLog() {
     removedDays: [],
     weeklyGoal: 5,
     swaps: {},
-    rotationStart: null
+    rotationStart: null,
+    oneOff: {}
   });
   const noteTimer = useRef(null);
   const autoTimer = useRef(null);
@@ -1254,6 +1938,7 @@ function LiftLog() {
     let savedGoal = 5;
     let savedSwaps = {};
     let savedRotStart = null;
+    let savedOneOff = {};
     try {
       const raw = store.get(STORAGE_KEY);
       if (raw) {
@@ -1272,11 +1957,16 @@ function LiftLog() {
         savedGoal = parsed.weeklyGoal || 5;
         savedSwaps = parsed.swaps || {};
         savedRotStart = parsed.rotationStart || null;
+        // Drop any day-only additions from previous dates
+        const tk = todayISO();
+        savedOneOff = parsed.oneOff && parsed.oneOff[tk] ? {
+          [tk]: parsed.oneOff[tk]
+        } : {};
       }
     } catch (e) {
       // corrupt or missing — start fresh
     }
-    const allCustom = Object.values(savedCustom).flat();
+    const allCustom = [...Object.values(savedCustom).flat(), ...Object.values(savedOneOff[todayISO()] || {}).flat()];
     const customById = Object.fromEntries(allCustom.map(e => [e.id, e]));
     const lookup = id => EX_BY_ID[id] || LIB_MAP[id] || customById[id];
     const normRecs = {};
@@ -1311,7 +2001,8 @@ function LiftLog() {
       removedDays: savedRemovedDays,
       weeklyGoal: savedGoal,
       swaps: savedSwaps,
-      rotationStart: savedRotStart || todayISO()
+      rotationStart: savedRotStart || todayISO(),
+      oneOff: savedOneOff
     };
     setRecords(normRecs);
     setSessions(normSess);
@@ -1327,6 +2018,7 @@ function LiftLog() {
     setWeeklyGoal(savedGoal);
     setSwaps(savedSwaps);
     setRotationStart(savedRotStart || todayISO());
+    setOneOff(savedOneOff);
     const initLoads = {};
     [...ALL_EX, ...LIB_EXTRA, ...allCustom].forEach(ex => {
       const hist = normRecs[ex.id];
@@ -1357,6 +2049,7 @@ function LiftLog() {
       });
     });
     setDone(initDone);
+    setActiveDay(nextDayDue(normSess, savedRemovedDays, savedCustomDays));
     setLoaded(true);
   }, []);
   const removedDaySet = new Set(removedDays);
@@ -1385,7 +2078,11 @@ function LiftLog() {
       slotOf: ex.id
     } : ex;
   };
-  const exercisesForDay = d => [...d.exercises.filter(ex => !removedSet.has(ex.id)).map(applySwap), ...(custom[d.id] || []).map(applySwap)].map(withSets);
+  const oneOffToday = oneOff[todayISO()] || {};
+  const exercisesForDay = d => [...d.exercises.filter(ex => !removedSet.has(ex.id)).map(applySwap), ...(custom[d.id] || []).map(applySwap), ...(oneOffToday[d.id] || []).map(e => ({
+    ...e,
+    oneOff: true
+  }))].map(withSets);
   const dayExercises = exercisesForDay(day);
   const exMap = {
     ...EX_BY_ID,
@@ -1402,6 +2099,20 @@ function LiftLog() {
     return Array(ex.sets).fill(0).map((_, k) => typeof cur[k] === "number" && cur[k] > 0 ? cur[k] : def);
   }
   const getReps = ex => getRepsFrom(repsLog, ex);
+  const draftFor = (key, fallback) => draft && draft.key === key ? draft.val : fallback;
+  const focusField = (key, current) => e => {
+    setDraft({
+      key,
+      val: String(current || "")
+    });
+    const el = e.target;
+    // Deferred so iOS Safari doesn't drop the selection when the keypad opens
+    setTimeout(() => {
+      try {
+        el.select();
+      } catch (err) {}
+    }, 0);
+  };
   const setRepsDirect = (ex, i, val) => {
     const n = parseInt(val, 10);
     const v = isNaN(n) ? 0 : Math.min(99, Math.max(0, n));
@@ -1436,6 +2147,7 @@ function LiftLog() {
     });
   };
   const bumpSet = (ex, i, delta) => {
+    setDraft(null);
     const cur = getLoadsFrom(loads, ex)[i];
     const next = Math.max(0, Math.round((cur + delta) * 100) / 100);
     setLoads(prev => {
@@ -1462,6 +2174,7 @@ function LiftLog() {
     markSet(ex.id, i, ex.sets, v > 0);
   };
   const copyDown = (ex, i) => {
+    setDraft(null);
     const w = getLoadsFrom(loads, ex)[i];
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
@@ -1520,6 +2233,21 @@ function LiftLog() {
     }, 800);
   };
   const dispName = ex => renames[ex.id] || ex.name;
+  // Library search: every token has to hit somewhere in the name or its category.
+  // Matching also runs against a punctuation-stripped copy so "pullup" finds
+  // "Pull-ups" and "ezbar" finds "EZ-bar curl".
+  const compactStr = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const libTokens = libQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matchLib = l => {
+    if (!libTokens.length) return true;
+    const name = dispName(l).toLowerCase();
+    const cat = String(CAT_LABELS[l.cat] || "").toLowerCase();
+    const hay = name + " " + cat;
+    const hayC = compactStr(name) + " " + compactStr(cat);
+    return libTokens.every(t => hay.includes(t) || hayC.includes(compactStr(t)));
+  };
+  const libMatches = LIBRARY.filter(matchLib);
+  const libVisibleCats = CAT_ORDER.filter(c => libMatches.some(l => l.cat === c));
   const startRename = ex => {
     setEditingEx(ex.id);
     setEditText(dispName(ex));
@@ -1823,26 +2551,44 @@ function LiftLog() {
       showNotice(`${libEx.name} is already in that day.`);
       return;
     }
-    const nextCustom = {
-      ...dataRef.current.custom,
-      [dayId]: [...(dataRef.current.custom[dayId] || []), {
-        ...libEx
-      }]
+    const tk = todayISO();
+    const prevDay = (dataRef.current.oneOff[tk] || {})[dayId] || [];
+    const nextOneOff = {
+      [tk]: {
+        ...(dataRef.current.oneOff[tk] || {}),
+        [dayId]: [...prevDay, {
+          ...libEx
+        }]
+      }
     };
     dataRef.current = {
       ...dataRef.current,
-      custom: nextCustom
+      oneOff: nextOneOff
     };
-    setCustom(nextCustom);
+    setOneOff(nextOneOff);
     setLibAdd(null);
-    showNotice(`Added ${libEx.name}.`);
+    showNotice(`Added ${libEx.name} — today only.`);
     try {
       persist();
     } catch (e) {}
   };
   const removeExercise = exId => {
+    const tk = todayISO();
+    const isOneOff = ((dataRef.current.oneOff[tk] || {})[day.id] || []).some(e => e.id === exId);
     const isCustom = (custom[day.id] || []).some(e => e.id === exId);
-    if (isCustom) {
+    if (isOneOff) {
+      const nextOneOff = {
+        [tk]: {
+          ...(dataRef.current.oneOff[tk] || {}),
+          [day.id]: ((dataRef.current.oneOff[tk] || {})[day.id] || []).filter(e => e.id !== exId)
+        }
+      };
+      dataRef.current = {
+        ...dataRef.current,
+        oneOff: nextOneOff
+      };
+      setOneOff(nextOneOff);
+    } else if (isCustom) {
       const nextCustom = {
         ...dataRef.current.custom,
         [day.id]: (dataRef.current.custom[day.id] || []).filter(e => e.id !== exId)
@@ -1888,7 +2634,8 @@ function LiftLog() {
         removedDays: parsed.removedDays || [],
         weeklyGoal: parsed.weeklyGoal || 5,
         swaps: parsed.swaps || {},
-        rotationStart: parsed.rotationStart || todayISO()
+        rotationStart: parsed.rotationStart || todayISO(),
+        oneOff: {}
       };
       dataRef.current = next;
       setRecords(next.records);
@@ -1905,6 +2652,8 @@ function LiftLog() {
       setWeeklyGoal(next.weeklyGoal);
       setSwaps(next.swaps);
       setRotationStart(next.rotationStart);
+      setOneOff({});
+      setActiveDay(nextDayDue(next.sessions, next.removedDays, next.customDays));
       const initLoads = {};
       const allEx = [...ALL_EX, ...Object.values(next.custom).flat()];
       allEx.forEach(ex => {
@@ -1997,6 +2746,16 @@ function LiftLog() {
         dateRef.current = t;
         setDone({});
         setLastSaved(null);
+        const d0 = dataRef.current;
+        setActiveDay(nextDayDue(d0.sessions, d0.removedDays, d0.customDays));
+        dataRef.current = {
+          ...d0,
+          oneOff: {}
+        };
+        setOneOff({});
+        try {
+          persist();
+        } catch (e) {}
       }
     };
     const iv = setInterval(checkDate, 30000);
@@ -2499,7 +3258,21 @@ function LiftLog() {
         fontSize: 15,
         lineHeight: 1.25
       }
-    }, dispName(ex)), /*#__PURE__*/React.createElement("div", {
+    }, dispName(ex), ex.oneOff && /*#__PURE__*/React.createElement("span", {
+      style: {
+        marginLeft: 7,
+        fontFamily: "'Archivo', sans-serif",
+        fontWeight: 700,
+        fontSize: 9,
+        textTransform: "uppercase",
+        letterSpacing: "0.4px",
+        color: "#8B8E94",
+        border: "1px solid #3A3E45",
+        borderRadius: 5,
+        padding: "1px 5px",
+        verticalAlign: "middle"
+      }
+    }, "Today only")), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 11.5,
@@ -2688,11 +3461,23 @@ function LiftLog() {
         maxWidth: 104
       }
     }, /*#__PURE__*/React.createElement("input", {
-      type: "number",
+      type: "text",
       inputMode: "decimal",
-      value: w || "",
+      value: draftFor(`w${ex.id}:${i}`, w || ""),
       placeholder: "0",
-      onChange: e => setSetDirect(ex, i, e.target.value),
+      onFocus: focusField(`w${ex.id}:${i}`, w || ""),
+      onBlur: () => setDraft(null),
+      onChange: e => {
+        // Digits and a single decimal point only
+        let raw = e.target.value.replace(/[^0-9.]/g, "");
+        const dot = raw.indexOf(".");
+        if (dot !== -1) raw = raw.slice(0, dot + 1) + raw.slice(dot + 1).replace(/\./g, "");
+        setDraft({
+          key: `w${ex.id}:${i}`,
+          val: raw
+        });
+        setSetDirect(ex, i, raw);
+      },
       style: {
         width: "100%",
         background: "#131417",
@@ -2737,12 +3522,22 @@ function LiftLog() {
         fontFamily: "'JetBrains Mono', monospace"
       }
     }, "×"), /*#__PURE__*/React.createElement("input", {
-      type: "number",
+      type: "text",
       inputMode: "numeric",
-      value: exReps[i] || "",
+      value: draftFor(`r${ex.id}:${i}`, exReps[i] || ""),
       placeholder: String(targetReps(ex)),
       "aria-label": `Set ${i + 1} reps`,
-      onChange: e => setRepsDirect(ex, i, e.target.value),
+      onFocus: focusField(`r${ex.id}:${i}`, exReps[i] || ""),
+      onBlur: () => setDraft(null),
+      onChange: e => {
+        // Two digits max, so the 0-99 clamp never has to rewrite mid-typing
+        const raw = e.target.value.replace(/[^0-9]/g, "").slice(0, 2);
+        setDraft({
+          key: `r${ex.id}:${i}`,
+          val: raw
+        });
+        setRepsDirect(ex, i, raw);
+      },
       style: {
         width: "100%",
         boxSizing: "border-box",
@@ -3024,6 +3819,70 @@ function LiftLog() {
     }
   }, "Cancel"))))), view === "library" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      position: "absolute",
+      left: 13,
+      top: "50%",
+      transform: "translateY(-50%)",
+      fontSize: 13,
+      color: "#5C6067",
+      pointerEvents: "none"
+    }
+  }, "\u2315"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: libQuery,
+    placeholder: `Search ${LIBRARY.length} exercises\u2026`,
+    "aria-label": "Search the exercise library",
+    autoComplete: "off",
+    autoCorrect: "off",
+    autoCapitalize: "none",
+    spellCheck: false,
+    onChange: e => setLibQuery(e.target.value),
+    style: {
+      width: "100%",
+      boxSizing: "border-box",
+      background: "#1C1E22",
+      border: `1.5px solid ${libQuery ? "#3A3E45" : "#26292E"}`,
+      borderRadius: 12,
+      color: "#ECEAE4",
+      fontFamily: "'Inter', sans-serif",
+      fontSize: 14,
+      padding: libQuery ? "11px 38px 11px 34px" : "11px 14px 11px 34px",
+      outline: "none"
+    }
+  }), libQuery && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setLibQuery(""),
+    "aria-label": "Clear search",
+    style: {
+      position: "absolute",
+      right: 6,
+      top: "50%",
+      transform: "translateY(-50%)",
+      border: "none",
+      background: "none",
+      color: "#8B8E94",
+      fontSize: 15,
+      cursor: "pointer",
+      padding: "6px 9px",
+      lineHeight: 1
+    }
+  }, "\u2715")), libQuery.trim() && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: 11.5,
+      color: libMatches.length ? "#8B8E94" : "#C97A6D",
+      marginTop: 8,
+      paddingLeft: 2
+    }
+  }, libMatches.length ? `${libMatches.length} of ${LIBRARY.length} exercises` : `No exercises match \u201c${libQuery.trim()}\u201d \u2014 try a shorter word, or a body part like \u201cback\u201d.`)), !libQuery.trim() && /*#__PURE__*/React.createElement("div", {
+    style: {
       background: "#1C1E22",
       borderRadius: 16,
       padding: 16,
@@ -3092,7 +3951,7 @@ function LiftLog() {
       lineHeight: 1.5,
       marginTop: 10
     }
-  }, "Every exercise below can also be swapped one at a time from the Today tab with ⇄. Each exercise keeps its own history and PR wherever it appears.")), CAT_ORDER.map(cat => /*#__PURE__*/React.createElement("div", {
+  }, "Every exercise below can also be swapped one at a time from the Today tab with ⇄. Each exercise keeps its own history and PR wherever it appears.")), libVisibleCats.map(cat => /*#__PURE__*/React.createElement("div", {
     key: cat,
     style: {
       marginBottom: 14
@@ -3107,7 +3966,7 @@ function LiftLog() {
       color: "#8B8E94",
       marginBottom: 6
     }
-  }, CAT_LABELS[cat]), LIBRARY.filter(l => l.cat === cat).map(l => {
+  }, CAT_LABELS[cat]), libMatches.filter(l => l.cat === cat).map(l => {
     const activeDays = days.filter(d => exercisesForDay(d).some(dx => dx.id === l.id));
     return /*#__PURE__*/React.createElement("div", {
       key: l.id,
@@ -3170,7 +4029,7 @@ function LiftLog() {
         flexWrap: "wrap",
         justifyContent: "flex-end"
       }
-    }, days.map(d => /*#__PURE__*/React.createElement("button", {
+    }, [day].map(d => /*#__PURE__*/React.createElement("button", {
       key: d.id,
       onClick: () => addFromLibrary(l, d.id),
       style: {
