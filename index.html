@@ -2185,6 +2185,42 @@ function LiftLog() {
     });
     markSet(ex.id, i, ex.sets, v > 0);
   };
+  // Hold timer for "sec" unit exercises (planks, side planks, etc). Keyed by
+  // `${exId}:${setIndex}` -> start timestamp, so multiple sets/exercises could
+  // in theory run at once, though the UI only ever starts one at a time.
+  const [runningTimers, setRunningTimers] = useState({});
+  const [timerTick, setTimerTick] = useState(0);
+  useEffect(() => {
+    if (Object.keys(runningTimers).length === 0) return;
+    const iv = setInterval(() => setTimerTick(t => t + 1), 1000);
+    return () => clearInterval(iv);
+  }, [Object.keys(runningTimers).length > 0]);
+  const timerKey = (exId, i) => `${exId}:${i}`;
+  const startTimer = (exId, i) => {
+    setRunningTimers(prev => ({
+      ...prev,
+      [timerKey(exId, i)]: Date.now()
+    }));
+  };
+  const stopTimer = (ex, i) => {
+    const key = timerKey(ex.id, i);
+    const start = runningTimers[key];
+    if (start) {
+      const elapsed = Math.max(1, Math.round((Date.now() - start) / 1000));
+      setSetDirect(ex, i, String(elapsed));
+    }
+    setRunningTimers(prev => {
+      const next = {
+        ...prev
+      };
+      delete next[key];
+      return next;
+    });
+  };
+  const elapsedFor = (exId, i) => {
+    const start = runningTimers[timerKey(exId, i)];
+    return start ? Math.max(0, Math.round((Date.now() - start) / 1000)) : 0;
+  };
   const copyDown = (ex, i) => {
     setDraft(null);
     const w = getLoadsFrom(loads, ex)[i];
@@ -3582,7 +3618,35 @@ function LiftLog() {
         padding: "7px 4px 7px 14px",
         outline: "none"
       }
-    })), i < ex.sets - 1 ? /*#__PURE__*/React.createElement("button", {
+    })), ex.unit === "sec" && (runningTimers[timerKey(ex.id, i)] ? /*#__PURE__*/React.createElement("button", {
+      onClick: () => stopTimer(ex, i),
+      "aria-label": `Stop timer for set ${i + 1}`,
+      style: {
+        ...miniBtn,
+        background: "#C0392B",
+        color: "#FBFAF7",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 13,
+        fontWeight: 700,
+        padding: "7px 10px",
+        flexShrink: 0,
+        minWidth: 58,
+        textAlign: "center"
+      }
+    }, `⏹ ${elapsedFor(ex.id, i)}s`) : /*#__PURE__*/React.createElement("button", {
+      onClick: () => startTimer(ex.id, i),
+      "aria-label": `Start timer for set ${i + 1}`,
+      style: {
+        ...miniBtn,
+        background: "#3B6BB5",
+        color: "#FBFAF7",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 13,
+        fontWeight: 700,
+        padding: "7px 10px",
+        flexShrink: 0
+      }
+    }, "▶ Start")), i < ex.sets - 1 ? /*#__PURE__*/React.createElement("button", {
       onClick: () => copyDown(ex, i),
       "aria-label": "Copy this weight to the sets below",
       title: "Copy to sets below",
