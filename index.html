@@ -3160,7 +3160,7 @@ function LiftLog() {
     const hist = records[ex.id] || [];
     const isOpen = expanded === ex.id;
     return /*#__PURE__*/React.createElement("div", {
-      key: ex.id,
+      key: ex.slotOf || ex.id,
       style: {
         background: "#1C1E22",
         borderRadius: 16,
