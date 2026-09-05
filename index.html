@@ -1890,6 +1890,9 @@ function LiftLog() {
   // Library adds live here, keyed by date -> dayId, so they only apply to the
   // session you're actually working. Pruned to today's key on load/rollover.
   const [oneOff, setOneOff] = useState({});
+  // Exercises skipped for today only, keyed by date -> array of exercise ids.
+  // Distinct from `removed`, which is a permanent delete from the day.
+  const [skipped, setSkipped] = useState({});
   const [addOpen, setAddOpen] = useState(false);
   const [addName, setAddName] = useState("");
   const [addSets, setAddSets] = useState(4);
@@ -1916,7 +1919,8 @@ function LiftLog() {
     weeklyGoal: 5,
     swaps: {},
     rotationStart: null,
-    oneOff: {}
+    oneOff: {},
+    skipped: {}
   });
   const noteTimer = useRef(null);
   const autoTimer = useRef(null);
@@ -1935,6 +1939,7 @@ function LiftLog() {
     let savedDayEdits = {};
     let savedCustomDays = [];
     let savedRemovedDays = [];
+    let savedSkipped = {};
     let savedGoal = 5;
     let savedSwaps = {};
     let savedRotStart = null;
@@ -1961,6 +1966,10 @@ function LiftLog() {
         const tk = todayISO();
         savedOneOff = parsed.oneOff && parsed.oneOff[tk] ? {
           [tk]: parsed.oneOff[tk]
+        } : {};
+        // Skips are day-of only — drop any from previous dates, same as oneOff.
+        savedSkipped = parsed.skipped && parsed.skipped[tk] ? {
+          [tk]: parsed.skipped[tk]
         } : {};
       }
     } catch (e) {
@@ -2002,7 +2011,8 @@ function LiftLog() {
       weeklyGoal: savedGoal,
       swaps: savedSwaps,
       rotationStart: savedRotStart || todayISO(),
-      oneOff: savedOneOff
+      oneOff: savedOneOff,
+      skipped: savedSkipped
     };
     setRecords(normRecs);
     setSessions(normSess);
@@ -2019,6 +2029,7 @@ function LiftLog() {
     setSwaps(savedSwaps);
     setRotationStart(savedRotStart || todayISO());
     setOneOff(savedOneOff);
+    setSkipped(savedSkipped);
     const initLoads = {};
     [...ALL_EX, ...LIB_EXTRA, ...allCustom].forEach(ex => {
       const hist = normRecs[ex.id];
@@ -2079,7 +2090,8 @@ function LiftLog() {
     } : ex;
   };
   const oneOffToday = oneOff[todayISO()] || {};
-  const exercisesForDay = d => [...d.exercises.filter(ex => !removedSet.has(ex.id)).map(applySwap), ...(custom[d.id] || []).map(applySwap), ...(oneOffToday[d.id] || []).map(e => ({
+  const skippedTodaySet = new Set(skipped[todayISO()] || []);
+  const exercisesForDay = d => [...d.exercises.filter(ex => !removedSet.has(ex.id) && !skippedTodaySet.has(ex.id)).map(applySwap), ...(custom[d.id] || []).map(applySwap), ...(oneOffToday[d.id] || []).map(e => ({
     ...e,
     oneOff: true
   }))].map(withSets);
@@ -2572,7 +2584,7 @@ function LiftLog() {
       persist();
     } catch (e) {}
   };
-  const removeExercise = exId => {
+  const removeExercise = (exId, mode) => {
     const tk = todayISO();
     const isOneOff = ((dataRef.current.oneOff[tk] || {})[day.id] || []).some(e => e.id === exId);
     const isCustom = (custom[day.id] || []).some(e => e.id === exId);
@@ -2598,6 +2610,16 @@ function LiftLog() {
         custom: nextCustom
       };
       setCustom(nextCustom);
+    } else if (mode === "today") {
+      const nextSkipped = {
+        ...dataRef.current.skipped,
+        [tk]: [...(dataRef.current.skipped[tk] || []), exId]
+      };
+      dataRef.current = {
+        ...dataRef.current,
+        skipped: nextSkipped
+      };
+      setSkipped(nextSkipped);
     } else {
       const nextRemoved = [...dataRef.current.removed, exId];
       dataRef.current = {
@@ -3296,20 +3318,28 @@ function LiftLog() {
         color: "#E0B33C",
         marginTop: 2
       }
-    }, "🏆 best ", best.w, ex.unit === "lb" ? "" : ` ${ex.unit}`, best.r ? `×${best.r}` : "", " · ", fmtDate(best.d))), editingEx !== ex.id && (confirmRemoveEx === ex.id ? /*#__PURE__*/React.createElement("div", {
+    }, "🏆 best ", best.w, ex.unit === "lb" ? "" : ` ${ex.unit}`, best.r ? `×${best.r}` : "", " · ", fmtDate(best.d))), editingEx !== ex.id && (confirmRemoveEx === (ex.slotOf || ex.id) ? /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 6,
-        flexShrink: 0
+        flexShrink: 0,
+        flexWrap: "wrap"
       }
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => removeExercise(ex.id),
+    }, !ex.oneOff && !(custom[day.id] || []).some(c => c.id === (ex.slotOf || ex.id)) && /*#__PURE__*/React.createElement("button", {
+      onClick: () => removeExercise(ex.slotOf || ex.id, "today"),
+      style: {
+        ...miniBtn,
+        background: "#3B6BB5",
+        color: "#FBFAF7"
+      }
+    }, "Skip today"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => removeExercise(ex.slotOf || ex.id, "permanent"),
       style: {
         ...miniBtn,
         background: "#C0392B",
         color: "#FBFAF7"
       }
-    }, "Remove"), /*#__PURE__*/React.createElement("button", {
+    }, !ex.oneOff && !(custom[day.id] || []).some(c => c.id === (ex.slotOf || ex.id)) ? "Delete permanently" : "Remove"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setConfirmRemoveEx(null),
       style: miniBtn
     }, "Keep")) : /*#__PURE__*/React.createElement("div", {
@@ -3340,7 +3370,7 @@ function LiftLog() {
         color: "#5C6067"
       }
     }, "✎"), /*#__PURE__*/React.createElement("button", {
-      onClick: () => setConfirmRemoveEx(ex.id),
+      onClick: () => setConfirmRemoveEx(ex.slotOf || ex.id),
       "aria-label": `Remove ${dispName(ex)} from plan`,
       style: {
         ...miniBtn,
