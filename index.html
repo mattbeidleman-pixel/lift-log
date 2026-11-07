@@ -1711,16 +1711,16 @@ const LIB_EXTRA = [{
   name: "Stairmaster",
   target: "15–25 min",
   sets: 1,
-  unit: "sec",
-  step: 60
+  unit: "min",
+  step: 1
 }, {
   id: "lib_jumprope",
   cat: "cardio",
   name: "Jump rope",
   target: "10–15 min",
   sets: 1,
-  unit: "sec",
-  step: 30
+  unit: "min",
+  step: 1
 }, {
   id: "lib_swim",
   cat: "cardio",
@@ -1834,6 +1834,21 @@ function fmtWsRs(ws, rs, unit) {
   if (uniform) return `${fmtWs(ws)} ×${pairs[0].r}`;
   return (ws || []).map((w, i) => w > 0 ? `${w}×${rs[i] || "?"}` : "·").join("/");
 }
+// Default +/- step for each unit, used when an exercise's unit is changed.
+const UNIT_STEP = {
+  lb: 5,
+  reps: 1,
+  sec: 5,
+  min: 1,
+  mi: 0.25
+};
+const UNIT_CHOICES = ["lb", "reps", "sec", "min", "mi"];
+// Exercises whose built-in unit moved from seconds to minutes. History saved
+// before the change has no unit tag, so it's converted once on load.
+const SEC_TO_MIN_IDS = new Set(["lib_stairmaster", "lib_jumprope"]);
+// Each saved entry carries the unit it was logged in (u). Older entries have
+// no tag and were logged in the exercise's built-in unit.
+const recUnit = (r, baseUnit) => r.u || baseUnit;
 function normalizeEntry(e, sets) {
   if (e.ws) return e;
   const w = typeof e.w === "number" ? e.w : 0;
@@ -1860,6 +1875,7 @@ function LiftLog() {
   const [renames, setRenames] = useState({});
   const [setCounts, setSetCounts] = useState({}); // { exId: overridden set count }
   const [targets, setTargets] = useState({}); // { exId: overridden reps text }
+  const [units, setUnits] = useState({}); // { exId: overridden unit }
   const [dayEdits, setDayEdits] = useState({}); // { dayId: { label, sub } }
   const [customDays, setCustomDays] = useState([]); // user-added days
   const [removedDays, setRemovedDays] = useState([]); // deleted built-in day ids
@@ -1886,6 +1902,7 @@ function LiftLog() {
   const [editingEx, setEditingEx] = useState(null);
   const [editText, setEditText] = useState("");
   const [editTarget, setEditTarget] = useState("");
+  const [editUnit, setEditUnit] = useState("lb");
   const [confirmRemoveEx, setConfirmRemoveEx] = useState(null);
   // Library adds live here, keyed by date -> dayId, so they only apply to the
   // session you're actually working. Pruned to today's key on load/rollover.
@@ -1913,6 +1930,7 @@ function LiftLog() {
     renames: {},
     setCounts: {},
     targets: {},
+    units: {},
     dayEdits: {},
     customDays: [],
     removedDays: [],
@@ -1936,6 +1954,7 @@ function LiftLog() {
     let savedRenames = {};
     let savedSetCounts = {};
     let savedTargets = {};
+    let savedUnits = {};
     let savedDayEdits = {};
     let savedCustomDays = [];
     let savedRemovedDays = [];
@@ -1956,6 +1975,7 @@ function LiftLog() {
         savedRenames = parsed.renames || {};
         savedSetCounts = parsed.setCounts || {};
         savedTargets = parsed.targets || {};
+        savedUnits = parsed.units || {};
         savedDayEdits = parsed.dayEdits || {};
         savedCustomDays = parsed.customDays || [];
         savedRemovedDays = parsed.removedDays || [];
@@ -1982,7 +2002,17 @@ function LiftLog() {
     Object.keys(recs).forEach(exId => {
       const ex = lookup(exId);
       const sets = ex ? ex.sets : 4;
-      normRecs[exId] = recs[exId].map(e => normalizeEntry(e, sets));
+      normRecs[exId] = recs[exId].map(e => {
+        const n = normalizeEntry(e, sets);
+        if (SEC_TO_MIN_IDS.has(exId) && !n.u) {
+          return {
+            ...n,
+            u: "min",
+            ws: (n.ws || []).map(w => typeof w === "number" ? Math.round(w / 6) / 10 : w)
+          };
+        }
+        return n;
+      });
     });
     const normSess = sess.map(s => ({
       ...s,
@@ -2005,6 +2035,7 @@ function LiftLog() {
       renames: savedRenames,
       setCounts: savedSetCounts,
       targets: savedTargets,
+      units: savedUnits,
       dayEdits: savedDayEdits,
       customDays: savedCustomDays,
       removedDays: savedRemovedDays,
@@ -2022,6 +2053,7 @@ function LiftLog() {
     setRenames(savedRenames);
     setSetCounts(savedSetCounts);
     setTargets(savedTargets);
+    setUnits(savedUnits);
     setDayEdits(savedDayEdits);
     setCustomDays(savedCustomDays);
     setRemovedDays(savedRemovedDays);
@@ -2032,7 +2064,7 @@ function LiftLog() {
     setSkipped(savedSkipped);
     const initLoads = {};
     [...ALL_EX, ...LIB_EXTRA, ...allCustom].forEach(ex => {
-      const hist = normRecs[ex.id];
+      const hist = (normRecs[ex.id] || []).filter(r => recUnit(r, ex.unit) === (savedUnits[ex.id] || ex.unit));
       if (hist && hist.length) {
         const last = hist[hist.length - 1].ws;
         initLoads[ex.id] = Array(ex.sets).fill(0).map((_, i) => typeof last[i] === "number" ? last[i] : last[last.length - 1] || 0);
@@ -2041,7 +2073,7 @@ function LiftLog() {
     setLoads(initLoads);
     const initReps = {};
     [...ALL_EX, ...LIB_EXTRA, ...allCustom].forEach(ex => {
-      const hist = normRecs[ex.id];
+      const hist = (normRecs[ex.id] || []).filter(r => recUnit(r, ex.unit) === (savedUnits[ex.id] || ex.unit));
       if (hist && hist.length) {
         const lastRs = hist[hist.length - 1].rs;
         if (lastRs && lastRs.length) {
@@ -2075,11 +2107,17 @@ function LiftLog() {
   const isLight = day.id === "cardio";
   const dayFg = isLight ? "#17181B" : "#FBFAF7";
   const removedSet = new Set(removed);
-  const withSets = ex => ({
-    ...ex,
-    sets: Math.min(6, Math.max(1, setCounts[ex.id] || ex.sets)),
-    target: targets[ex.id] || ex.target
-  });
+  const withSets = ex => {
+    const u = units[ex.id];
+    return {
+      ...ex,
+      sets: Math.min(6, Math.max(1, setCounts[ex.id] || ex.sets)),
+      target: targets[ex.id] || ex.target,
+      baseUnit: ex.unit,
+      unit: u || ex.unit,
+      step: u && u !== ex.unit ? UNIT_STEP[u] || 1 : ex.step
+    };
+  };
   const applySwap = ex => {
     const subId = swaps[ex.id];
     if (!subId) return ex;
@@ -2129,14 +2167,22 @@ function LiftLog() {
     const n = parseInt(val, 10);
     const v = isNaN(n) ? 0 : Math.min(99, Math.max(0, n));
     setRepsLog(prev => {
-      const arr = getRepsFrom(prev, ex);
-      arr[i] = v;
+      const arr = fillDown(ex, getRepsFrom(prev, ex), i, v);
       return {
         ...prev,
         [ex.id]: arr
       };
     });
-    if (v > 0) markSet(ex.id, i, ex.sets, true);
+  };
+  // Editing the first set copies its value down to every later set that
+  // hasn't been checked off yet. Sets are only marked done by tapping the circle.
+  const fillDown = (ex, arr, i, v) => {
+    arr[i] = v;
+    if (i === 0) {
+      const doneArr = done[ex.id] || [];
+      for (let j = 1; j < arr.length; j++) if (!doneArr[j]) arr[j] = v;
+    }
+    return arr;
   };
   const toggleSet = (exId, i, total) => {
     setDone(prev => {
@@ -2160,30 +2206,25 @@ function LiftLog() {
   };
   const bumpSet = (ex, i, delta) => {
     setDraft(null);
-    const cur = getLoadsFrom(loads, ex)[i];
-    const next = Math.max(0, Math.round((cur + delta) * 100) / 100);
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
-      arr[i] = Math.max(0, Math.round((arr[i] + delta) * 100) / 100);
+      const next = Math.max(0, Math.round((arr[i] + delta) * 100) / 100);
       return {
         ...prev,
-        [ex.id]: arr
+        [ex.id]: fillDown(ex, arr, i, next)
       };
     });
-    markSet(ex.id, i, ex.sets, next > 0);
   };
   const setSetDirect = (ex, i, val) => {
     const n = parseFloat(val);
     const v = isNaN(n) ? 0 : Math.max(0, n);
     setLoads(prev => {
-      const arr = getLoadsFrom(prev, ex);
-      arr[i] = v;
+      const arr = fillDown(ex, getLoadsFrom(prev, ex), i, v);
       return {
         ...prev,
         [ex.id]: arr
       };
     });
-    markSet(ex.id, i, ex.sets, v > 0);
   };
   // Hold timer for "sec" unit exercises (planks, side planks, etc). Keyed by
   // `${exId}:${setIndex}` -> start timestamp, so multiple sets/exercises could
@@ -2207,7 +2248,8 @@ function LiftLog() {
     const start = runningTimers[key];
     if (start) {
       const elapsed = Math.max(1, Math.round((Date.now() - start) / 1000));
-      setSetDirect(ex, i, String(elapsed));
+      // Minute-based activities log tenths of a minute (e.g. 22.5)
+      setSetDirect(ex, i, String(ex.unit === "min" ? Math.max(0.1, Math.round(elapsed / 6) / 10) : elapsed));
     }
     setRunningTimers(prev => {
       const next = {
@@ -2223,10 +2265,10 @@ function LiftLog() {
   };
   const copyDown = (ex, i) => {
     setDraft(null);
-    const w = getLoadsFrom(loads, ex)[i];
+    const doneArr = done[ex.id] || [];
     setLoads(prev => {
       const arr = getLoadsFrom(prev, ex);
-      for (let j = i + 1; j < ex.sets; j++) arr[j] = arr[i];
+      for (let j = i + 1; j < ex.sets; j++) if (!doneArr[j]) arr[j] = arr[i];
       return {
         ...prev,
         [ex.id]: arr
@@ -2234,22 +2276,12 @@ function LiftLog() {
     });
     setRepsLog(prev => {
       const arr = getRepsFrom(prev, ex);
-      for (let j = i + 1; j < ex.sets; j++) arr[j] = arr[i];
+      for (let j = i + 1; j < ex.sets; j++) if (!doneArr[j]) arr[j] = arr[i];
       return {
         ...prev,
         [ex.id]: arr
       };
     });
-    if (w > 0) {
-      setDone(prev => {
-        const arr = prev[ex.id] ? [...prev[ex.id]] : Array(ex.sets).fill(false);
-        for (let j = i; j < ex.sets; j++) arr[j] = true;
-        return {
-          ...prev,
-          [ex.id]: arr
-        };
-      });
-    }
   };
   function getLoadsFrom(state, ex) {
     const cur = state[ex.id] || [];
@@ -2300,6 +2332,7 @@ function LiftLog() {
     setEditingEx(ex.id);
     setEditText(dispName(ex));
     setEditTarget(ex.target);
+    setEditUnit(ex.unit);
     setConfirmRemoveEx(null);
   };
   const saveEdit = ex => {
@@ -2314,13 +2347,30 @@ function LiftLog() {
       ...dataRef.current.targets
     };
     if (target) nextTargets[ex.id] = target;else delete nextTargets[ex.id];
+    const nextUnits = {
+      ...(dataRef.current.units || {})
+    };
+    const base = ex.baseUnit || ex.unit;
+    if (editUnit && editUnit !== base) nextUnits[ex.id] = editUnit;else delete nextUnits[ex.id];
+    if (editUnit !== ex.unit) {
+      // Numbers typed in the old unit don't carry over to the new one
+      setLoads(prev => {
+        const n = {
+          ...prev
+        };
+        delete n[ex.id];
+        return n;
+      });
+    }
     dataRef.current = {
       ...dataRef.current,
       renames: nextRenames,
-      targets: nextTargets
+      targets: nextTargets,
+      units: nextUnits
     };
     setRenames(nextRenames);
     setTargets(nextTargets);
+    setUnits(nextUnits);
     try {
       persist();
     } catch (e) {}
@@ -2570,17 +2620,24 @@ function LiftLog() {
       target: addTarget.trim() || `${sets} sets`,
       sets,
       unit: addUnit,
-      step: addUnit === "mi" ? 0.25 : 5
+      step: UNIT_STEP[addUnit] || 5
     };
-    const nextCustom = {
-      ...dataRef.current.custom,
-      [day.id]: [...(dataRef.current.custom[day.id] || []), ex]
+    // Written-in exercises are for today's workout only, same as library adds —
+    // the day's routine goes back to normal next time.
+    const tk = todayISO();
+    const prevDay = (dataRef.current.oneOff[tk] || {})[day.id] || [];
+    const nextOneOff = {
+      [tk]: {
+        ...(dataRef.current.oneOff[tk] || {}),
+        [day.id]: [...prevDay, ex]
+      }
     };
     dataRef.current = {
       ...dataRef.current,
-      custom: nextCustom
+      oneOff: nextOneOff
     };
-    setCustom(nextCustom);
+    setOneOff(nextOneOff);
+    showNotice(`Added ${name} — today only.`);
     setAddName("");
     setAddTarget("");
     setAddSets(4);
@@ -2687,6 +2744,7 @@ function LiftLog() {
         renames: parsed.renames || {},
         setCounts: parsed.setCounts || {},
         targets: parsed.targets || {},
+        units: parsed.units || {},
         dayEdits: parsed.dayEdits || {},
         customDays: parsed.customDays || [],
         removedDays: parsed.removedDays || [],
@@ -2704,6 +2762,7 @@ function LiftLog() {
       setRenames(next.renames);
       setSetCounts(next.setCounts);
       setTargets(next.targets);
+      setUnits(next.units);
       setDayEdits(next.dayEdits);
       setCustomDays(next.customDays);
       setRemovedDays(next.removedDays);
@@ -2757,7 +2816,8 @@ function LiftLog() {
           d: today,
           ws,
           rs,
-          sd: setsDone
+          sd: setsDone,
+          u: ex.unit
         });
         recs[ex.id] = filtered.slice(-30);
         entries.push({
@@ -2851,6 +2911,9 @@ function LiftLog() {
       showNotice("Couldn't save the deletion — try again.");
     }
   };
+  // History for an exercise in the unit it's currently measured in, so minutes
+  // and miles never get compared against each other.
+  const histFor = ex => (records[ex.id] || []).filter(r => recUnit(r, ex.baseUnit || ex.unit) === ex.unit);
   const lastEntry = exId => {
     const hist = records[exId];
     if (!hist || !hist.length) return null;
@@ -2858,7 +2921,7 @@ function LiftLog() {
   };
   const isComplete = (e, sets) => e.sd === undefined || e.sd >= Math.min(sets, (e.ws || []).length || sets);
   const lastCompleted = ex => {
-    const hist = records[ex.id];
+    const hist = histFor(ex);
     if (!hist || !hist.length) return null;
     for (let i = hist.length - 1; i >= 0; i--) {
       if (isComplete(hist[i], ex.sets)) return hist[i];
@@ -2866,7 +2929,7 @@ function LiftLog() {
     return null;
   };
   const bestFor = ex => {
-    const hist = records[ex.id] || [];
+    const hist = histFor(ex);
     let best = null;
     hist.forEach(e => {
       (e.ws || []).forEach((w, i) => {
@@ -2882,7 +2945,7 @@ function LiftLog() {
     return best;
   };
   const trend = ex => {
-    const hist = (records[ex.id] || []).filter(e => isComplete(e, ex.sets));
+    const hist = histFor(ex).filter(e => isComplete(e, ex.sets));
     if (hist.length < 2) return null;
     const diff = maxW(hist[hist.length - 1].ws) - maxW(hist[hist.length - 2].ws);
     if (diff > 0) return "up";
@@ -3207,7 +3270,8 @@ function LiftLog() {
       fontSize: 14
     }
   }, "Loading your log…") : /*#__PURE__*/React.createElement(React.Fragment, null, dayExercises.map(ex => {
-    const last = lastEntry(ex.id);
+    const unitHist = histFor(ex);
+    const last = unitHist.length ? unitHist[unitHist.length - 1] : null;
     const lastDone = lastCompleted(ex);
     const tr = trend(ex);
     const doneArr = Array(ex.sets).fill(false).map((_, di) => Boolean((done[ex.id] || [])[di]));
@@ -3260,6 +3324,30 @@ function LiftLog() {
         outline: "none"
       }
     }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 5,
+        alignItems: "center",
+        flexWrap: "wrap"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 11.5,
+        color: "#8B8E94",
+        marginRight: 2
+      }
+    }, "Measure in:"), UNIT_CHOICES.map(u => /*#__PURE__*/React.createElement("button", {
+      key: u,
+      onClick: () => setEditUnit(u),
+      style: {
+        ...miniBtn,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 12,
+        padding: "4px 10px",
+        background: editUnit === u ? day.color : "#26292E",
+        color: editUnit === u ? dayFg : "#B8BAC0"
+      }
+    }, u))), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 6,
@@ -3618,7 +3706,7 @@ function LiftLog() {
         padding: "7px 4px 7px 14px",
         outline: "none"
       }
-    })), ex.unit === "sec" && (runningTimers[timerKey(ex.id, i)] ? /*#__PURE__*/React.createElement("button", {
+    })), (ex.unit === "sec" || ex.unit === "min") && (runningTimers[timerKey(ex.id, i)] ? /*#__PURE__*/React.createElement("button", {
       onClick: () => stopTimer(ex, i),
       "aria-label": `Stop timer for set ${i + 1}`,
       style: {
@@ -3633,7 +3721,7 @@ function LiftLog() {
         minWidth: 58,
         textAlign: "center"
       }
-    }, `⏹ ${elapsedFor(ex.id, i)}s`) : /*#__PURE__*/React.createElement("button", {
+    }, ex.unit === "min" ? `⏹ ${Math.floor(elapsedFor(ex.id, i) / 60)}:${String(elapsedFor(ex.id, i) % 60).padStart(2, "0")}` : `⏹ ${elapsedFor(ex.id, i)}s`) : /*#__PURE__*/React.createElement("button", {
       onClick: () => startTimer(ex.id, i),
       "aria-label": `Start timer for set ${i + 1}`,
       style: {
@@ -3725,7 +3813,7 @@ function LiftLog() {
       style: {
         fontWeight: 700
       }
-    }, fmtWsRs(h.ws, h.rs, ex.unit)), !isComplete(h, ex.sets) && /*#__PURE__*/React.createElement("span", {
+    }, fmtWsRs(h.ws, h.rs, recUnit(h, ex.baseUnit || ex.unit))), !isComplete(h, ex.sets) && /*#__PURE__*/React.createElement("span", {
       style: {
         color: "#8B8E94",
         fontSize: 11
@@ -3868,7 +3956,7 @@ function LiftLog() {
       color: "#8B8E94",
       marginRight: 4
     }
-  }, "Unit:"), ["lb", "sec", "mi"].map(u => /*#__PURE__*/React.createElement("button", {
+  }, "Unit:"), ["lb", "sec", "min", "mi"].map(u => /*#__PURE__*/React.createElement("button", {
     key: u,
     onClick: () => setAddUnit(u),
     style: {
