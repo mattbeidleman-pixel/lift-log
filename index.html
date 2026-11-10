@@ -1944,6 +1944,7 @@ function LiftLog() {
   const autoTimer = useRef(null);
   const noticeTimer = useRef(null);
   const dateRef = useRef(todayISO());
+  const dirtyRef = useRef(null); // key of the field typed into since it was focused
   const storageOk = store.available;
   useEffect(() => {
     let recs = {};
@@ -2163,11 +2164,17 @@ function LiftLog() {
       } catch (err) {}
     }, 0);
   };
+  // Typing only changes the field being typed in. Rewriting the other sets'
+  // fields on every keystroke made the iOS home-screen app jump the page while
+  // the keypad was open, so the copy-down for typed values waits until the
+  // field loses focus (see commitField).
   const setRepsDirect = (ex, i, val) => {
     const n = parseInt(val, 10);
     const v = isNaN(n) ? 0 : Math.min(99, Math.max(0, n));
+    dirtyRef.current = `r${ex.id}:${i}`;
     setRepsLog(prev => {
-      const arr = fillDown(ex, getRepsFrom(prev, ex), i, v);
+      const arr = getRepsFrom(prev, ex);
+      arr[i] = v;
       return {
         ...prev,
         [ex.id]: arr
@@ -2183,6 +2190,27 @@ function LiftLog() {
       for (let j = 1; j < arr.length; j++) if (!doneArr[j]) arr[j] = v;
     }
     return arr;
+  };
+  // Leaving a field: if set 1 was typed into, copy it down now.
+  const commitField = (kind, ex, i) => () => {
+    setDraft(null);
+    const key = `${kind}${ex.id}:${i}`;
+    if (dirtyRef.current !== key) return;
+    dirtyRef.current = null;
+    if (i !== 0) return;
+    if (kind === "w") setLoads(prev => {
+      const arr = getLoadsFrom(prev, ex);
+      return {
+        ...prev,
+        [ex.id]: fillDown(ex, arr, 0, arr[0])
+      };
+    });else setRepsLog(prev => {
+      const arr = getRepsFrom(prev, ex);
+      return {
+        ...prev,
+        [ex.id]: fillDown(ex, arr, 0, arr[0])
+      };
+    });
   };
   const toggleSet = (exId, i, total) => {
     setDone(prev => {
@@ -2215,11 +2243,13 @@ function LiftLog() {
       };
     });
   };
-  const setSetDirect = (ex, i, val) => {
+  const setSetDirect = (ex, i, val, typed) => {
     const n = parseFloat(val);
     const v = isNaN(n) ? 0 : Math.max(0, n);
+    if (typed) dirtyRef.current = `w${ex.id}:${i}`;
     setLoads(prev => {
-      const arr = fillDown(ex, getLoadsFrom(prev, ex), i, v);
+      const arr = getLoadsFrom(prev, ex);
+      if (typed) arr[i] = v;else fillDown(ex, arr, i, v);
       return {
         ...prev,
         [ex.id]: arr
@@ -3620,7 +3650,7 @@ function LiftLog() {
       value: draftFor(`w${ex.id}:${i}`, w || ""),
       placeholder: "0",
       onFocus: focusField(`w${ex.id}:${i}`, w || ""),
-      onBlur: () => setDraft(null),
+      onBlur: commitField("w", ex, i),
       onChange: e => {
         // Digits and a single decimal point only
         let raw = e.target.value.replace(/[^0-9.]/g, "");
@@ -3630,7 +3660,7 @@ function LiftLog() {
           key: `w${ex.id}:${i}`,
           val: raw
         });
-        setSetDirect(ex, i, raw);
+        setSetDirect(ex, i, raw, true);
       },
       style: {
         width: "100%",
@@ -3682,7 +3712,7 @@ function LiftLog() {
       placeholder: String(targetReps(ex)),
       "aria-label": `Set ${i + 1} reps`,
       onFocus: focusField(`r${ex.id}:${i}`, exReps[i] || ""),
-      onBlur: () => setDraft(null),
+      onBlur: commitField("r", ex, i),
       onChange: e => {
         // Two digits max, so the 0-99 clamp never has to rewrite mid-typing
         const raw = e.target.value.replace(/[^0-9]/g, "").slice(0, 2);
