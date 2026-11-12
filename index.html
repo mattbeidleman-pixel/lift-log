@@ -4234,7 +4234,7 @@ function LiftLog() {
         borderRadius: 6,
         padding: "2px 7px"
       }
-    }, d.label)), activeDays.length === 0 && (libAdd === l.id ? /*#__PURE__*/React.createElement("div", {
+    }, d.label)), !activeDays.some(d => d.id === day.id) && (libAdd === l.id ? /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 4,
